@@ -14,11 +14,14 @@
 ; List
 (load "std/list.lp")
 
+; Map
+(load "std/map.lp")
+
 ; Conditional
 (load "std/cond.lp")
 
 ; Modules
-;(load "std/module.lp")
+(load "std/module.lp")
 
 ; Math
 (load "std/math.lp")

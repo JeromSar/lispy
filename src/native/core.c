@@ -180,3 +180,16 @@ lval* native_error(lenv* e, lval* a) {
   lval_del(a);
   return err;
 }
+
+lval* native_assert(lenv* e, lval* a) {
+  LASSERT_ARGS(a, "assert", 1);
+  LASSERT_TYPE(a, "assert", 0, LVAL_LONG);
+  
+  if (a->cell[0]->num_l == 0) {
+    lval_del(a);
+    return lval_err("Assertion failed!");
+  }
+
+  lval_del(a);
+  return lval_sexpr();
+}

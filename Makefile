@@ -82,7 +82,7 @@ run: compile
 memcheck: compile
 	cls
 	@echo.
-	drmemory -- $(DIST_DIR)/$(TARGET)	
+	drmemory -show_reachable -- $(DIST_DIR)/$(TARGET)	
 
 debug: compile
 	cls

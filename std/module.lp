@@ -5,31 +5,37 @@
 ;
 ; Stores as: { {add (\ {x y} {+ x y})} ... }
 ;
-
-; TODO: Majorly broken -> Fix
 (fun {moduledef name f} { do
   ; Validate args
   (if (== (len name) 2) {} {
     error "Function 'moduledef' passed too few arguments!"
   })
 
-  ; Setup vars (as list) - module name, function name
   (= {mname} (head name))
   (= {fname} (tail name))
   
-  ; Define the module as an empty list,
-  ; if it does not exist already
-  ; if (isdef {nil}) {(print "hai")} {(print "hi")}
+  ; Define the module as an empty list
   (if (isdef mname) {} { do
     (def mname {})
   })
+
+  ; New definition
+  (= {newdef} (join fname (list f)))
   
-  ; New addition:
-  ; {add (\ {x y} {+ x y })}
-  (def {newdef} (join fname (list f)))
-  
-  ; Update the module list
+  ; Redefine the module
   (def mname (cons newdef (eval mname)))
+})
+
+; Defines a function in a module
+;
+; Usage:
+;   (modulefun {math mul x y} {* x y})
+;
+(fun {modulefun desc body} { do
+  (= {mod} (head desc))
+  (= {name} (head (tail desc)))
+  (= {formals} (tail (tail desc)))
+  (moduledef (join mod name) (eval (join {\} (list formals) (list body))))
 })
 
 ; Defines a module.
@@ -37,24 +43,21 @@
 ; Usage:
 ;   (module {math} {
 ;    (def {plus x y}  {+ x y})
-;    (def {minus x y  {- x y}}
+;    (def {minus x y  {- x y}})
 ;   })
 ;
 ; (module {math} { (def {plus x y}  {+ x y}) })
 (fun {module mname content} { do
-  ; Redefine 'def' to use 'moduledef'
-  ; (def {x} 20)
-  (= {def} (\ {formals body} {moduledef (join mname formals) body}))
+
+  ; Redefine 'fun' to use 'moduledef'
+  (= {fun} (\ {formals body} {modulefun (join mname formals) body}))
+
+  ; Works:
+  ;(moduledef {math add} (\ {x y} {+ x y}))
   
-  ;(= {def} (\ {_ b} {print "hi"}))
-  ;(show def)
-  
-  (def {plus x y} {+ x y})
-  
-  (show content)
-  
-  ; Evaluate body
-  (eval content)
+  (foreach content (\ {s} { do
+    ; Foreach evaluates
+  }))
 })
 
 ; Imports all definitions from a module.

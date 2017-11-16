@@ -27,12 +27,16 @@
 
 ; Square root
 (fun {sqrt x} {
-  sqrt-iter (/ x 2.0) x
+  if (< x 0) {
+    error "Cannot calculate negative root"
+  } {
+    sqrt-iter (/ x 2.0) x
+  }
 })
 
 ; Square root helper
 (fun {sqrt-iter guess x} {
-  if (< (abs (- (* guess guess) x)) 0.001) {
+  if (< (abs (- (* guess guess) x)) (* x 0.00001)) {
     guess
   } {
     sqrt-iter ((avg guess (/ x guess))) x
