@@ -24,10 +24,12 @@ struct lval {
   int type;
   
   union {
-    // LVAL_NUM: Internal representation
-    long num_l;
+    // LVAL_DOUBLE: Double
     double num_d;
     
+    // LVAL_LONG: Long
+    long num_l;
+
     // LVAL_ERR: Error message
     struct {
       char* err;

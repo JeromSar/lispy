@@ -48,8 +48,29 @@ lval* native_eval(lenv* e, lval* a) {
 }
 
 lval* native_join(lenv* e, lval* a) {
+  if (a->cell[0]->type == LVAL_STR) {
+    // Handle string joining
+    int length = 0;
+    for (int i = 0; i < a->count; i++) {
+      LASSERT_TYPE(a, "join", i, LVAL_STR);
+      length += strlen(a->cell[i]->str);
+    }
+
+    char* str = calloc(1, length + 1);
+    for (int i = 0; i < a->count; i++) {
+      strcat(str, a->cell[i]->str);
+    }
+
+    lval* x = lval_str(str);
+    free(str); // lval_str copies the contents and holds a new char*
+
+    lval_del(a);
+    return x;
+  }
+
+  // Joining a Q-expression
   for (int i = 0; i < a->count; i++) {
-    LASSERT_TYPE(a, "eval", i, LVAL_QEXPR);
+    LASSERT_TYPE(a, "join", i, LVAL_QEXPR);
   }
   
   lval* x = lval_pop(a, 0);

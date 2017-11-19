@@ -80,7 +80,6 @@ lval* native_load(lenv* e, lval* a);
 lval* native_show(lenv* e, lval* a);
 lval* native_print(lenv* e, lval* a);
 lval* native_error(lenv* e, lval* a);
-lval* native_assert(lenv* e, lval* a);
 
 // math.c
 lval* native_add(lenv* e, lval* a);
@@ -112,5 +111,11 @@ lval* native_eval(lenv* e, lval* a);
 lval* native_join(lenv* e, lval* a);
 lval* native_cons(lenv* e, lval* a);
 lval* native_len(lenv* e, lval* a);
+
+// string.c
+lval* native_str(lenv* e, lval* a);
+// TODO:
+//lval* native_atoi(lenv* e, lval* a);
+//lval* native_formatf(lenv* e, lavl* a);
 
 #endif

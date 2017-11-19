@@ -2,26 +2,14 @@
 ; Lispy v0.0.1 standard library
 ;
 
-; Atoms
-(def {nil} {})
-(def {true} 1)
-(def {false} 0)
-(def {otherwise} true)
+; These are the packages loaded by default.
+; Order is important. Mind your step!
 
-; Functions
+(load "std/atom.lp")
 (load "std/fun.lp")
-
-; List
 (load "std/list.lp")
-
-; Map
 (load "std/map.lp")
-
-; Conditional
 (load "std/cond.lp")
-
-; Modules
 (load "std/module.lp")
-
-; Math
 (load "std/math.lp")
+(load "std/assert.lp")

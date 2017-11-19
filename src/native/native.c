@@ -11,7 +11,6 @@ void native_addall(lenv* e) {
   lenv_put_native(e, "show",   native_show);
   lenv_put_native(e, "print",  native_print);
   lenv_put_native(e, "error",  native_error);
-  lenv_put_native(e, "assert", native_assert);
 
   // Math
   lenv_put_native(e, "+",     native_add);
@@ -43,5 +42,7 @@ void native_addall(lenv* e) {
   lenv_put_native(e, "join",  native_join);
   lenv_put_native(e, "cons",  native_cons);
   lenv_put_native(e, "len",   native_len);
-}
 
+  // String
+  lenv_put_native(e, "str",   native_str);
+}

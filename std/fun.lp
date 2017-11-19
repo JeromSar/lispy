@@ -35,7 +35,7 @@
 (fun {flip f a b} {f b a})
 
 ; Ignored
-(fun {ghost & xs} {eval xs})
+;(fun {ghost & xs} {eval xs})
 
 ; Compose a function of two functions
 (fun {comp f g x} {f (g x)})
