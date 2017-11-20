@@ -11,7 +11,7 @@ void native_addall(lenv* e) {
   lenv_put_native(e, "show",   native_show);
   lenv_put_native(e, "print",  native_print);
   lenv_put_native(e, "error",  native_error);
-  //lenv_put_native(e, "try",    native_try);
+  lenv_put_native(e, "try",    native_try);
 
   // Math
   lenv_put_native(e, "+",      native_add);

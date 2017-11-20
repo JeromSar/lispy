@@ -1,4 +1,3 @@
-
 ; fun
 (fun {fun-test-fun x y} {+ x y})
 (assert-defined {fun-test-fun})

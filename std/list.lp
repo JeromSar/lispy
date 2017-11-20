@@ -24,6 +24,13 @@
 ;    {+ 1 (len (tail l))}
 ;})
 
+; Take n items
+(fun {take n l} {
+  if (== n 0)
+    {nil}
+    {join (head l) (take (- n 1) (tail l))}
+})
+
 ; Drop n items
 (fun {drop n l} {
   if (== n 0)
@@ -55,11 +62,18 @@
     {join (if (f (fst l)) {head l} {nil}) (filter f (tail l))}
 })
 
-; Fold Left
+; Fold left
 (fun {foldl f z l} {
   if (== l nil)
     {z}
     {foldl f (f z (fst l)) (tail l)}
+})
+
+; Fold right
+(fun {foldr f z l} {
+  if (== l nil)
+    {z}
+    {foldl f (f z (last l)) (take (- (len l) 1) l)}
 })
 
 ; For each element in a list

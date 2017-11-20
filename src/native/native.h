@@ -80,7 +80,7 @@ lval* native_load(lenv* e, lval* a);
 lval* native_show(lenv* e, lval* a);
 lval* native_print(lenv* e, lval* a);
 lval* native_error(lenv* e, lval* a);
-//lval* native_try(lenv* e, lval* a);
+lval* native_try(lenv* e, lval* a);
 
 // math.c
 lval* native_add(lenv* e, lval* a);

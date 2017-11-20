@@ -42,3 +42,8 @@
 (fun {assert-undefined x} {
   (assert (not (isdef x)) (join "expected to be undefined: " (str x) ", was '" (str x) "'"))
 })
+
+(fun {assert-error x} {
+  (assert (!= () (try x)) (join "expected to cause an error: " (str x) ", but execution succeeded"))
+})
+

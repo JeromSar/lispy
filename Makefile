@@ -32,7 +32,7 @@ LFLAGS_DEPLOY = -static-libgcc
 #
 # ========== NO CONFIG BEYOND THIS LINE ==========
 #
-.PHONY: clean compile deploy run memcheck debug
+.PHONY: clean compile deploy run test memcheck debug
 
 # Define sources and objects
 SOURCES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/*/*.c)
@@ -72,12 +72,14 @@ compile: $(OBJECTS)
 deploy: $(OBJECTS)
 	@mkdir -p $(DIST_DIR)
 	$(CC) $(LINK_FLAGS) -o $(DIST_DIR)/dist-$(TARGET) $(OBJECTS)
-	@echo Compiled binary: $(DIST_DIR)/dist-$(TARGET)
 
 run: compile
-	cls
 	@echo.
 	@$(DIST_DIR)/$(TARGET)
+  
+test: compile
+	@echo.
+	@$(DIST_DIR)/$(TARGET) "test/test-stdlib.lp"
 
 memcheck: compile
 	cls
