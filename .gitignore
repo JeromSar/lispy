@@ -9,3 +9,6 @@ dist
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Some testing files
+/*.lp

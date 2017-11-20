@@ -180,3 +180,26 @@ lval* native_error(lenv* e, lval* a) {
   lval_del(a);
   return err;
 }
+
+lval* native_try(lenv* e, lval* a) {
+  LASSERT_ARGS(a, "try", 1);
+  LASSERT_TYPE(a, "try", 0, LVAL_QEXPR);
+  
+  lval* x = lval_take(a, 0);
+
+  // Make our expression a Q-expr
+  x->type = LVAL_SEXPR;
+  
+  lval* result = lval_eval(e, x);
+  
+  if (result->type == LVAL_ERR) {
+    // Error, return the error string
+    lval* message = lval_str(result->err);
+    lval_del(result);
+    return message;
+  }
+  
+  // No error, return empty S-expression
+  lval_del(result);
+  return lval_sexpr();
+}
