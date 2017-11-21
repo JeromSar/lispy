@@ -56,7 +56,6 @@ vpath %.c $(SRC_DIR)
 clean:
 	$(RM) -R $(BUILD_DIR)
 
-	
 # Target - .c file
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -66,30 +65,25 @@ $(BUILD_DIR)/%.o: %.c
 compile: $(OBJECTS)
 	@mkdir -p $(DIST_DIR)
 	$(CC) $(LINK_FLAGS) -o $(DIST_DIR)/$(TARGET) $(OBJECTS)
-	@echo Compiled binary: $(DIST_DIR)/$(TARGET)
-	
+
 # Target - deploy
 deploy: $(OBJECTS)
 	@mkdir -p $(DIST_DIR)
 	$(CC) $(LINK_FLAGS) -o $(DIST_DIR)/dist-$(TARGET) $(OBJECTS)
 
+# Target - run
 run: compile
-	@echo.
 	@$(DIST_DIR)/$(TARGET)
-  
+
+# Target - test
 test: compile
-	@echo.
 	@$(DIST_DIR)/$(TARGET) "test/test-stdlib.lp"
 
+# Target - memcheck
 memcheck: compile
 	cls
-	@echo.
 	drmemory -show_reachable -- $(DIST_DIR)/$(TARGET)	
 
+# Target - debug
 debug: compile
-	cls
-	@echo.
 	gdb $(DIST_DIR)/$(TARGET)
-	
-
-
