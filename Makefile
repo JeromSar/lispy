@@ -89,6 +89,6 @@ $(DIST_DIR)/$(TARGET): $(OBJECTS)
 	$(CC) $(LINK_FLAGS) -o $(DIST_DIR)/$(TARGET) $(OBJECTS)
 
 # Deployment binary
-$(DIST_DIR)/dist-$(TARGET):	$(OBJECTS)
+$(DIST_DIR)/dist-$(TARGET):	clean $(OBJECTS)
 	@mkdir -p $(DIST_DIR)
 	$(CC) $(LINK_FLAGS) -o $(DIST_DIR)/dist-$(TARGET) $(OBJECTS)
