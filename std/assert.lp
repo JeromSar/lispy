@@ -23,6 +23,13 @@
   assert (!= x y) (join "expected '" (str x) "', got: '" (str y) "'")
 })
 
+(fun {assert-float-equal x y} {
+  assert (and
+    (> y (- x 0.000001))
+    (< y (+ x 0.000001)))
+      (join "expected '" (str x) "', got: '" (str y) "'")
+})
+
 (fun {assert-nil x} {
   assert (== x nil) (join "expected nil, got: '" (str x) "'")
 })

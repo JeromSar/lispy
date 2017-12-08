@@ -30,7 +30,11 @@
   if (< x 0) {
     error "Cannot calculate negative root"
   } {
-    sqrt-iter (/ x 2.0) x
+    if (== x 0) {
+      0.0
+    } {
+      sqrt-iter (/ x 2.0) x
+    }
   }
 })
 
