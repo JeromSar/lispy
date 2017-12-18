@@ -6,12 +6,13 @@
 #include "util.h" // streq
 
 //
-// Lval heap constructors
+// lval heap constructors
 //
 
 // Create a new number (long) type lval
 lval* lval_long(long x) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_LONG;
   v->num_l = x;
   return v;
@@ -20,6 +21,7 @@ lval* lval_long(long x) {
 // Create a new number (double) type lval
 lval* lval_double(double x) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_DOUBLE;
   v->num_d = x;
   return v;
@@ -28,6 +30,7 @@ lval* lval_double(double x) {
 // Create a new error type lval
 lval* lval_err(char* fmt, ...) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_ERR;
   
   // Create a va list and init it
@@ -52,6 +55,7 @@ lval* lval_err(char* fmt, ...) {
 // Create a new symbol type lval
 lval* lval_sym(char* s) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_SYM;
   v->sym = malloc(strlen(s) + 1);
   strcpy(v->sym, s);
@@ -61,6 +65,7 @@ lval* lval_sym(char* s) {
 // Create a new string type lval
 lval* lval_str(char* s) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_STR;
   v->str = malloc(strlen(s) + 1);
   strcpy(v->str, s);
@@ -70,6 +75,7 @@ lval* lval_str(char* s) {
 // Create a new lval referring to a native function
 lval* lval_fun(lnative func) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_FUN;
   v->native = func;
   return v;
@@ -78,6 +84,7 @@ lval* lval_fun(lnative func) {
 // Create a new lval lambda with the specified formals and body
 lval* lval_lambda(lval* formals, lval* body) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_FUN;
   v->native = NULL;
   v->env = lenv_new();
@@ -89,6 +96,7 @@ lval* lval_lambda(lval* formals, lval* body) {
 // Create a new (and empty) S-expression type lval
 lval* lval_sexpr(void) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_SEXPR;
   v->count = 0;
   v->cell = NULL;
@@ -98,6 +106,7 @@ lval* lval_sexpr(void) {
 // Create a new (and empty) Q-expression type lval
 lval* lval_qexpr(void) {
   lval* v = malloc(sizeof(lval));
+  v->loc = NULL;
   v->type = LVAL_QEXPR;
   v->count = 0;
   v->cell = NULL;
@@ -109,6 +118,12 @@ lval* lval_qexpr(void) {
 //
 
 void lval_del(lval* v) {
+  
+  // Remove location
+  if (v->loc) {
+    free(v->loc);
+  }
+  
   switch (v->type) {
     // Don't do anyting for numbers
     case LVAL_LONG:
@@ -152,8 +167,13 @@ void lval_del(lval* v) {
 // Creates a value-equal duplicate of the lval
 lval* lval_copy(lval* v) {
   lval* x = malloc(sizeof(lval));
-  x->type = v->type;
+  x->loc = NULL;
   
+  if (v->loc) {
+    // TODO: Copy loc?
+  }
+
+  x->type = v->type;
   switch (v->type) {
     
     // Copy numbers and functions directly
@@ -262,67 +282,6 @@ int lval_is_num(lval* x) {
   }
 }
 
-//
-// AST -> lval operations
-//
-
-lval* lval_read_long(mpc_ast_t* t) {
-  errno = 0;
-  long x = strtol(t->contents, NULL, 10);
-  if (errno == ERANGE || errno == EINVAL) {
-    return lval_err("Invalid long number: %s", t->contents);
-  }
-  return lval_long(x);
-}
-
-lval* lval_read_double(mpc_ast_t* t) {
-  errno = 0;
-  double x = strtod(t->contents, NULL);
-  if (errno == ERANGE || errno == EINVAL) {
-    return lval_err("Invalid double number: %s", t->contents);
-  }
-  return lval_double(x);
-}
-
-lval* lval_read_str(mpc_ast_t* t) {
-  // Cut off final quote character
-  t->contents[strlen(t->contents)-1] = '\0';
-  // Make a copy, missing out the first qu
-  char* unescaped = malloc(strlen(t->contents+1) + 1);
-  strcpy(unescaped, t->contents+1);
-  unescaped = mpcf_unescape(unescaped);
-  lval* str = lval_str(unescaped);
-  free(unescaped);
-  return str;
-}
-
-lval* lval_read(mpc_ast_t* t) {
-  
-  // Numbers, strings and symbols
-  if (strstr(t->tag, "double")) { return lval_read_double(t); }
-  if (strstr(t->tag, "long")) { return lval_read_long(t); }
-  if (strstr(t->tag, "string")) { return lval_read_str(t); }
-  if (strstr(t->tag, "symbol")) { return lval_sym(t->contents); }
-  
-  // If root (>), S-expr or Q-expr, then create an empty list
-  lval* x = NULL;
-  if (streq(t->tag, ">"))      { x = lval_sexpr(); }
-  if (strstr(t->tag, "sexpr")) { x = lval_sexpr(); }
-  if (strstr(t->tag, "qexpr")) { x = lval_qexpr(); }
-  
-  // Fill the list with valid expressions
-  for (int i = 0; i < t->children_num; i++) {
-    if (strcmp(t->children[i]->contents, "(") == 0) { continue; }
-    if (strcmp(t->children[i]->contents, ")") == 0) { continue; }
-    if (strcmp(t->children[i]->contents, "}") == 0) { continue; }
-    if (strcmp(t->children[i]->contents, "{") == 0) { continue; }
-    if (strcmp(t->children[i]->tag,  "regex") == 0) { continue; }
-    if (strstr(t->children[i]->tag, "comment"))     { continue; }
-    x = lval_add(x, lval_read(t->children[i]));
-  }
-  
-  return x;
-}
 
 //
 // S/Q-Expression operations

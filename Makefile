@@ -18,7 +18,7 @@ DIST_DIR = dist
 #  -O3     sets optimization level
 #  -I.     adds the current working directory to the include path
 #
-CC = gcc
+CC = cc
 CSTD = -std=c99
 CWARN_OPTS = -Wall -Wextra -Werror -Wno-unused-parameter
 

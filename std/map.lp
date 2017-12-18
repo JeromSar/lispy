@@ -4,10 +4,9 @@
 
 ; Make a new map
 (fun {map-new & keyvals} {
-  if (== vals {nil}) {
+  if (or (keyvals == nil) (== keyvals {nil})) {
     {}
   } {
-    
   }
 })
 

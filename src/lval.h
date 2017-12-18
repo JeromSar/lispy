@@ -23,6 +23,9 @@ struct lval {
   // Type of the lval
   int type;
   
+  // Metadata on where the lval was defined
+  sym_loc* loc; // symtable.h
+  
   union {
     // LVAL_DOUBLE: Double
     double num_d;
@@ -31,9 +34,7 @@ struct lval {
     long num_l;
 
     // LVAL_ERR: Error message
-    struct {
-      char* err;
-    };
+    char* err;
       
     // LVAL_SYM: Symbol
     char* sym;
@@ -60,8 +61,12 @@ struct lval {
 // Possible lval.type values
 enum { LVAL_DOUBLE, LVAL_LONG, LVAL_ERR,   LVAL_SYM,
        LVAL_STR,    LVAL_FUN,  LVAL_SEXPR, LVAL_QEXPR };
-       
-// Heap constructors
+
+// Heap constructors: lval_loc
+lval_loc* lval_loc_rc(int row, int col);
+lval_loc* lval_loc_ast(mpc_ast_t* ast);
+
+// Heap constructors: lval
 lval* lval_long(long x);
 lval* lval_double(double x);
 lval* lval_err(char* fmt, ...);
@@ -77,12 +82,6 @@ void lval_del(lval* v);
 lval* lval_copy(lval* v);
 int lval_eq(lval* x, lval* y);
 int lval_is_num(lval* x);
-
-// AST to lval reading
-lval* lval_read_long(mpc_ast_t* t);
-lval* lval_read_double(mpc_ast_t* t);
-lval* lval_read_str(mpc_ast_t* t);
-lval* lval_read(mpc_ast_t* t);
 
 // S-expression operations
 lval* lval_add(lval* v, lval* x);

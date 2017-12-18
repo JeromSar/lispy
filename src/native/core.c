@@ -112,41 +112,57 @@ lval* native_load(lenv* e, lval* a) {
   LASSERT_TYPE(a, "load", 0, LVAL_STR);
 
   mpc_result_t r;
-  if (mpc_parse_contents(a->cell[0]->str, grammar_get(), &r)) {
-    
-    // Read
-    lval* expr = lval_read(r.output);
-    //mpc_ast_print(r.output);
-    mpc_ast_delete(r.output);
-    
-    // Evaluate each expression
-    while (expr->count) {
-      lval* x = lval_eval(e, lval_pop(expr, 0));
-      
-      // Print errors
-      if (x->type == LVAL_ERR) {
-        lval_println(x); 
-      }
-      
-      lval_del(x);
-    }
-    
-    // Cleanup
-    lval_del(expr);
-    lval_del(a);
-    
-    return lval_sexpr();
-  } else {
+  if (!mpc_parse_contents(a->cell[0]->str, grammar_get(), &r)) {
     char* err_msg = mpc_err_string(r.error);
     mpc_err_delete(r.error);
     
     // Create new error
-    lval* err = lval_err("Could not load library: %s, ", err_msg);
+    lval* err = lval_err("Could not load file: %s, ", err_msg);
     free(err_msg);
     lval_del(a);
     
     return err;
   }
+  
+  // Read
+  lval* expr = lval_read(r.output);
+  //mpc_ast_print(r.output);
+  mpc_ast_delete(r.output);
+  
+  // Evaluate each expression
+  while (expr->count) {
+    lval* pre = lval_pop(expr, 0);
+    lval* post = lval_eval(e, pre);
+    
+    // Print errors
+    if (post->type == LVAL_ERR) {
+      lval_println(post);
+      
+      if (pre->loc) {
+        printf("\tat %s, line %d, column: %d\n",
+          a->cell[0]->str,
+          pre->loc->row,
+          pre->loc->col);
+      } else {
+        printf("\tat %s, unknown location\n",
+          a->cell[0]->str);
+      }
+
+      // Cleanup
+      lval* error = lval_copy(post);
+      lval_del(post);
+      lval_del(expr);
+      lval_del(a);
+      return error;
+    }
+    
+    lval_del(post);
+  }
+  
+  // Cleanup
+  lval_del(expr);
+  lval_del(a);
+  return lval_sexpr();
 }
 
 lval* native_show(lenv* e, lval* a) {
