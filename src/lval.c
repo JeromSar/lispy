@@ -12,7 +12,7 @@
 // Create a new number (long) type lval
 lval* lval_long(long x) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_LONG;
   v->num_l = x;
   return v;
@@ -21,7 +21,7 @@ lval* lval_long(long x) {
 // Create a new number (double) type lval
 lval* lval_double(double x) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_DOUBLE;
   v->num_d = x;
   return v;
@@ -30,7 +30,7 @@ lval* lval_double(double x) {
 // Create a new error type lval
 lval* lval_err(char* fmt, ...) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_ERR;
   
   // Create a va list and init it
@@ -55,7 +55,7 @@ lval* lval_err(char* fmt, ...) {
 // Create a new symbol type lval
 lval* lval_sym(char* s) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_SYM;
   v->sym = malloc(strlen(s) + 1);
   strcpy(v->sym, s);
@@ -65,7 +65,7 @@ lval* lval_sym(char* s) {
 // Create a new string type lval
 lval* lval_str(char* s) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_STR;
   v->str = malloc(strlen(s) + 1);
   strcpy(v->str, s);
@@ -75,7 +75,7 @@ lval* lval_str(char* s) {
 // Create a new lval referring to a native function
 lval* lval_fun(lnative func) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_FUN;
   v->native = func;
   return v;
@@ -84,7 +84,7 @@ lval* lval_fun(lnative func) {
 // Create a new lval lambda with the specified formals and body
 lval* lval_lambda(lval* formals, lval* body) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_FUN;
   v->native = NULL;
   v->env = lenv_new();
@@ -96,7 +96,7 @@ lval* lval_lambda(lval* formals, lval* body) {
 // Create a new (and empty) S-expression type lval
 lval* lval_sexpr(void) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_SEXPR;
   v->count = 0;
   v->cell = NULL;
@@ -106,7 +106,7 @@ lval* lval_sexpr(void) {
 // Create a new (and empty) Q-expression type lval
 lval* lval_qexpr(void) {
   lval* v = malloc(sizeof(lval));
-  v->loc = NULL;
+  v->loc = 0;
   v->type = LVAL_QEXPR;
   v->count = 0;
   v->cell = NULL;
@@ -118,11 +118,6 @@ lval* lval_qexpr(void) {
 //
 
 void lval_del(lval* v) {
-  
-  // Remove location
-  if (v->loc) {
-    free(v->loc);
-  }
   
   switch (v->type) {
     // Don't do anyting for numbers
@@ -167,7 +162,7 @@ void lval_del(lval* v) {
 // Creates a value-equal duplicate of the lval
 lval* lval_copy(lval* v) {
   lval* x = malloc(sizeof(lval));
-  x->loc = NULL;
+  x->loc = 0;
   
   if (v->loc) {
     // TODO: Copy loc?

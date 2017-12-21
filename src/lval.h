@@ -2,6 +2,8 @@
 #define LVAL_H
 
 #include "mpc/mpc.h"
+#include "symtable.h"
+#include "stack.h"
 
 // Some typedefs
 // lenv type is defined here to avoid cyclic dependency
@@ -17,6 +19,8 @@ struct lenv {
   int count;
   char** syms;
   lval** vals;
+  symtable* symtable;
+  stack* stack;
 };
 
 struct lval {
@@ -24,7 +28,8 @@ struct lval {
   int type;
   
   // Metadata on where the lval was defined
-  sym_loc* loc; // symtable.h
+  // See symtable.h
+  int loc;
   
   union {
     // LVAL_DOUBLE: Double
@@ -61,10 +66,6 @@ struct lval {
 // Possible lval.type values
 enum { LVAL_DOUBLE, LVAL_LONG, LVAL_ERR,   LVAL_SYM,
        LVAL_STR,    LVAL_FUN,  LVAL_SEXPR, LVAL_QEXPR };
-
-// Heap constructors: lval_loc
-lval_loc* lval_loc_rc(int row, int col);
-lval_loc* lval_loc_ast(mpc_ast_t* ast);
 
 // Heap constructors: lval
 lval* lval_long(long x);

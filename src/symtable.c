@@ -80,17 +80,15 @@ int symtable_push_sym(symtable* st, char* str, int row, int col) {
   if (st->free_syms) {
     key = st->free_syms->key;
     st->free_syms = st->free_syms->next;
+    st->syms[key-1] = sl;
+    return key;
   } else {
     // New key at the end of the array
-    st->len++
-    key = st->len;
+    int idx = st->len;
+    st->syms[idx] = sl;
+    st->len++;
+    return idx + 1;
   }
-  
-  int idx = key -1;
-  st->syms[idx] = sl;
-  
-  // Add entry
-  return key;
 }
 
 sym_loc* symtable_lookup_sym(symtable* st, int key) {
@@ -108,12 +106,16 @@ void symtable_del_sym(symtable* st, int key) {
   if (key > st->len || key <= 0) {
     return;
   }
-  
-  // The index
-  int i = key - 1;
-  
+
+
   // Delete the entry
-  sym_loc* sl = st->syms[i];
+  int idx = key - 1;
+  sym_loc* sl = st->syms[idx];
+
+  if (!sl) {
+    return;
+  }
+
   free(sl->filename);
   free(sl);
   

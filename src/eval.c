@@ -1,15 +1,11 @@
-#include "util.h" // streq
 #include "eval.h"
+#include "util.h" // streq
 #include "lval.h"
 #include "native/native.h"
 #include "lenv.h"
-#include "stackof.h"
+#include "stack.h"
 
 lval* lval_eval(lenv* e, lval* v) {
-
-  if (stack_overflow()) {
-    return lval_err("Stack overflow!");
-  }
 
   // Evaluate symbol
   if (v->type == LVAL_SYM) {
@@ -69,10 +65,16 @@ lval* lval_eval_sexpr(lenv* e, lval* v) {
 }
 
 lval* lval_call(lenv* e, lval* f, lval* a) {
-  
+
+  if (f->loc) {
+    stack_push(e->stack, f->loc);
+  }
+
   // If native, simply call
   if (f->native) {
-    return f->native(e, a);
+    lval* rval = f->native(e, a);
+    stack_pop(e->stack);
+    return rval;
   }
   
   // Argument counts
@@ -157,6 +159,11 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
   f->env->par = e;
   
   // Eval and return
-  return native_eval(
-    f->env, lval_add(lval_sexpr() , lval_copy(f->body)));
+  lval* rval = native_eval(
+    f->env,
+    lval_add(lval_sexpr() ,
+    lval_copy(f->body)));
+   
+  stack_pop(e->stack);
+  return rval;  
 }

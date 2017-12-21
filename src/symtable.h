@@ -1,5 +1,5 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
 
 typedef struct sym_loc sym_loc;
 typedef struct symtable symtable;

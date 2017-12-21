@@ -1,6 +1,9 @@
 #include<stdlib.h>
 #include "stack.h"
 
+// TODO: debug statement
+#include <stdio.h>
+
 stack* stack_new() {
   stack* st = malloc(sizeof(stack));
   st->len = 0;
@@ -14,6 +17,7 @@ bool stack_push(stack* st, int sym) {
   }
   st->syms[st->len] = sym;
   st->len++;
+  printf("Stack push: %d\n", sym);
   return true;
 }
 
@@ -22,6 +26,7 @@ int stack_pop(stack* st) {
     return -1;
   }
   st->len--;
+  printf("Stack pop: %d\n", st->syms[st->len]);
   return st->syms[st->len];
 }
 

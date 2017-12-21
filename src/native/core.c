@@ -1,4 +1,5 @@
 #include "native.h"
+#include "reader.h"
 
 //
 // Core
@@ -125,7 +126,8 @@ lval* native_load(lenv* e, lval* a) {
   }
   
   // Read
-  lval* expr = lval_read(r.output);
+  reader_set_filename(a->cell[0]->str);
+  lval* expr = reader_read(r.output);
   //mpc_ast_print(r.output);
   mpc_ast_delete(r.output);
   
@@ -138,15 +140,7 @@ lval* native_load(lenv* e, lval* a) {
     if (post->type == LVAL_ERR) {
       lval_println(post);
       
-      if (pre->loc) {
-        printf("\tat %s, line %d, column: %d\n",
-          a->cell[0]->str,
-          pre->loc->row,
-          pre->loc->col);
-      } else {
-        printf("\tat %s, unknown location\n",
-          a->cell[0]->str);
-      }
+      // TODO: print stack trace
 
       // Cleanup
       lval* error = lval_copy(post);

@@ -10,19 +10,18 @@
 #include "eval.h"
 #include "lenv.h"
 #include "native/native.h"
-#include "astutil.h"
+#include "reader.h"
 #include "mpc/mpc.h"
 
 static mpc_parser_t* parser;
 static lenv* env;
 
 void main_signal(int signal) {
-  main_exit(0);
+  puts("Exit.\n");
+  main_exit(1);
 }
 
 void main_exit(int code) {
-  puts("Exit.\n");
-  
   if (parser) {
     grammar_cleanup();
   }
@@ -33,6 +32,7 @@ void main_exit(int code) {
   exit(code);
 }
 
+#ifndef BUILDING_TESTS
 int main(int argc, char** argv) {
   // Setup signals
   signal(SIGINT, main_signal);
@@ -64,11 +64,12 @@ int main(int argc, char** argv) {
     
     main_exit(0);
   }
-  
+
   // Interactive mode
+  reader_set_filename("<stdin>");
   puts("Lispy version 0.0.1");
   puts("Press Ctrl+c to exit\n");
-  
+
   while (1) {
     
     char* input = console_readline("lispy> ");
@@ -89,11 +90,7 @@ int main(int argc, char** argv) {
       */
       
       // Read lval
-      lval* x = lval_read(ast);
-      
-      /*
-      lval_print(x);
-      */
+      lval* x = reader_read(ast);
       
       // Evaluate
       x = lval_eval(env, x);
@@ -101,7 +98,7 @@ int main(int argc, char** argv) {
       // Print
       lval_println(x);
       
-      // Cleaup
+      // Cleanup
       lval_del(x);
       mpc_ast_delete(ast);
     } else {
@@ -117,3 +114,4 @@ int main(int argc, char** argv) {
   
   main_exit(0);
 }
+#endif

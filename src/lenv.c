@@ -1,6 +1,7 @@
 #include "lenv.h"
 #include "lval.h"
 #include "util.h" // streq
+#include "stack.h"
 
 lenv* lenv_new(void) {
   lenv* e = malloc(sizeof(lenv));
@@ -8,6 +9,8 @@ lenv* lenv_new(void) {
   e->count = 0;
   e->syms = NULL;
   e->vals = NULL;
+  e->symtable = symtable_new();
+  e->stack = stack_new();
   return e;
 }
 
@@ -18,6 +21,8 @@ void lenv_del(lenv* e) {
   }
   free(e->syms);
   free(e->vals);
+  symtable_del(e->symtable);
+  stack_del(e->stack);
   free(e);
 }
 
