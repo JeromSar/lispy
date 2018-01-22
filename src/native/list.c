@@ -1,4 +1,5 @@
 #include "native.h"
+#include "lcontext.h"
 
 //
 // List
@@ -42,9 +43,12 @@ lval* native_eval(lenv* e, lval* a) {
   LASSERT_ARGS(a, "eval", 1);
   LASSERT_TYPE(a, "eval", 0, LVAL_QEXPR);
     
+  // Get eval environment
+  lcontext* ctx = lenv_get_eval(e);
+    
   lval* x = lval_take(a, 0);
   x->type = LVAL_SEXPR;
-  return lval_eval(e, x);
+  return lcontext_eval(ctx, x);
 }
 
 lval* native_join(lenv* e, lval* a) {

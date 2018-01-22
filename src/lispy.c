@@ -7,14 +7,14 @@
 #include "console.h"
 #include "grammar.h"
 #include "lval.h"
-#include "eval.h"
+#include "lcontext.h"
 #include "lenv.h"
 #include "native/native.h"
 #include "reader.h"
 #include "mpc/mpc.h"
 
 static mpc_parser_t* parser;
-static lenv* env;
+static lcontext* ctx;
 
 void main_signal(int signal) {
   puts("Exit.\n");
@@ -26,8 +26,8 @@ void main_exit(int code) {
     grammar_cleanup();
   }
   
-  if (env) {
-    lenv_del(env);
+  if (ctx) {
+    lcontext_del(ctx);
   }
   exit(code);
 }
@@ -37,23 +37,25 @@ int main(int argc, char** argv) {
   // Setup signals
   signal(SIGINT, main_signal);
   signal(SIGTERM, main_signal);
+  
+  // Setup stack
 
   // Create parser
   parser = grammar_create();
    
-  // Create environment
-  env = lenv_new();
-  native_addall(env);
-  
+  // Create evaluationenvironment
+  ctx = lcontext_new();
+  native_addall(ctx->env);
+
   // A list of files is supplied
   if (argc > 1) {
     for(int i = 1; i < argc; i++) {
       
       // Make arguments
       lval* args = lval_add(lval_sexpr(), lval_str(argv[i]));
-      
-      lval* x = native_load(env, args);
-      
+
+      lval* x = native_load(ctx->env, args);
+
       // Print errors
       if (x->type == LVAL_ERR) {
         lval_println(x);
@@ -61,7 +63,7 @@ int main(int argc, char** argv) {
         main_exit(1);
       }
     }
-    
+
     main_exit(0);
   }
 
@@ -91,9 +93,9 @@ int main(int argc, char** argv) {
       
       // Read lval
       lval* x = reader_read(ast);
-      
+
       // Evaluate
-      x = lval_eval(env, x);
+      x = lcontext_eval(ctx, x);
 
       // Print
       lval_println(x);

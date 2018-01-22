@@ -32,6 +32,7 @@ static lval* reader_read_long(mpc_ast_t* t) {
   }
   
   lval* r = lval_long(x);
+  r->loc = create_sym_loc(t);
   return r;
 }
 

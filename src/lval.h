@@ -13,14 +13,21 @@ typedef lval* (*lnative)(lenv*, lval*);
 
 // Only include lenv here, after typedefs
 #include "lenv.h"
+#include "lcontext.h"
 
 struct lenv {
+  
+  // Evaluation environment
+  lcontext* ctx;
+ 
+  // Parent
   lenv* par;
+  
+  // Symbols
+  // TODO: Convert to to hashmap for O(1) lookup
   int count;
   char** syms;
   lval** vals;
-  symtable* symtable;
-  stack* stack;
 };
 
 struct lval {

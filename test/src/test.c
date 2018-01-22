@@ -1,8 +1,5 @@
-#include "minunit.h"
-#include <test_stack.c>
+#include "cheat/cheat.h"
+#include "cheat/cheats.h"
 
-int main(int argc, const char** argv) {
-  MU_RUN_SUITE(suite_stack);
-  MU_REPORT();
-  return 0;
-}
+#include "test_stack.h"
+#include "test_symtable.h"

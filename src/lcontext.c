@@ -1,33 +1,51 @@
-#include "eval.h"
+#include "lcontext.h"
 #include "util.h" // streq
 #include "lval.h"
 #include "native/native.h"
 #include "lenv.h"
+#include "symtable.h"
 #include "stack.h"
 
-lval* lval_eval(lenv* e, lval* v) {
+lcontext* lcontext_new() {
+  lcontext* l = malloc(sizeof(lcontext));
+  l->stack = stack_new();
+  l->symtable = symtable_new();
+  l->env = lenv_new();
 
+  // Set evaluation environment
+  l->env->ctx = l;
+  return l;
+}
+
+void lcontext_del(lcontext* l) {
+  stack_del(l->stack);
+  symtable_del(l->symtable);
+  lenv_del(l->env);
+  free(l);
+}
+
+lval* lcontext_eval(lcontext* ctx, lval* v) {
   // Evaluate symbol
   if (v->type == LVAL_SYM) {
-    lval* x = lenv_get(e, v);
+    lval* x = lenv_get(ctx->env, v);
     lval_del(v);
     return x;
   }
 
   // Evaluate S-expressions
   if (v->type == LVAL_SEXPR) {
-    return lval_eval_sexpr(e, v);
+    return lcontext_eval_sexpr(ctx, v);
   }
   
   // All other types remain the same
   return v;
 }
 
-lval* lval_eval_sexpr(lenv* e, lval* v) {
+lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
   
   // Evaluate children
   for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lval_eval(e, v->cell[i]);
+    v->cell[i] = lcontext_eval(ctx, v->cell[i]);
   }
   
   // Error checking
@@ -60,20 +78,29 @@ lval* lval_eval_sexpr(lenv* e, lval* v) {
     return err;
   }
   
-  // lval_call does cleanup
-  return lval_call(e, f, v);
+  // lcontext_call does cleanup
+  return lcontext_call(ctx, f, v);
 }
 
-lval* lval_call(lenv* e, lval* f, lval* a) {
+lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
+
+  lval* rval;
 
   if (f->loc) {
-    stack_push(e->stack, f->loc);
+    stack_push(ctx->stack, f->loc);
+  } else {
+    stack_push(ctx->stack, 0);
   }
 
   // If native, simply call
   if (f->native) {
-    lval* rval = f->native(e, a);
-    stack_pop(e->stack);
+    rval = f->native(ctx->env, a);
+    
+    if (rval->type == LVAL_ERR) {
+      lcontext_handle_error(ctx, rval);
+    }
+    
+    stack_pop(ctx->stack);
     return rval;
   }
   
@@ -87,16 +114,18 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
     // If we've ran out of formal arguments to bind
     if (f->formals->count == 0) {
       lval_del(a);
-      return lval_err(
+      rval = lval_err(
         "Function passed too many arguments. "
         "Got %i, Expected %i.",
         given,
         total);
+
+      lcontext_handle_error(ctx, rval);
+      return rval;
     }
-    
-    
+
     lval* sym = lval_pop(f->formals, 0);
-    
+
     // Ellipsis
     if (streq(sym->sym, "&")) {
       
@@ -109,7 +138,7 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
       
       // Next formal should be bound to remaining arguments
       lval* nsym = lval_pop(f->formals, 0);
-      lenv_put(f->env, nsym, native_list(e, a));
+      lenv_put(f->env, nsym, native_list(ctx->env, a));
       lval_del(sym);
       lval_del(nsym);
       break;
@@ -133,8 +162,10 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
       // Check that & is not passed invalidly
       
       if (f->formals->count != 2) {
-        return lval_err("Function format invalid. "
+        rval = lval_err("Function format invalid. "
           "Symbol '&' not followed by single symbol.");
+        lcontext_handle_error(ctx, rval);
+        return rval;
       }
       
       // Pop and delete '&'
@@ -152,18 +183,47 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
   
   // Partially evaulated?
   if (f->formals->count != 0) {
+    stack_pop(ctx->stack);
     return lval_copy(f);
   }
-  
+
   // Set environment parent to evaluation environment;
-  f->env->par = e;
+  f->env->par = ctx->env;
   
   // Eval and return
-  lval* rval = native_eval(
+  rval = native_eval(
     f->env,
     lval_add(lval_sexpr() ,
     lval_copy(f->body)));
-   
-  stack_pop(e->stack);
+
+  if (rval->type == LVAL_ERR) {
+    lcontext_handle_error(ctx, rval);
+  }
+
+  stack_pop(ctx->stack);
   return rval;  
+}
+
+void lcontext_handle_error(lcontext* ctx, lval* err) {
+  if (err->type != LVAL_ERR) {
+    printf("Error: Handling error of non-error type!");
+    return;
+  }
+  
+  // Print stack trace
+  stack* st = ctx->stack;
+  symtable* syms = ctx->symtable;
+  
+  lval_println(err);
+  for (int i = 0; i < st->len; i++) {
+    sym_loc* s = symtable_lookup_sym(syms, st->syms[i]);
+    if (s != NULL) {
+      printf("\tat %s, line %d, column %d\n",
+        s->filename,
+        s->row,
+        s->col);
+    } else {
+      printf("\tat <unknown>, line ?, column ?\n");
+    }
+  }
 }

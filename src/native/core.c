@@ -1,5 +1,6 @@
 #include "native.h"
 #include "reader.h"
+#include "lcontext.h"
 
 //
 // Core
@@ -131,15 +132,18 @@ lval* native_load(lenv* e, lval* a) {
   //mpc_ast_print(r.output);
   mpc_ast_delete(r.output);
   
+  // Get eval environment
+  lcontext* ctx = lenv_get_eval(e);
+  
   // Evaluate each expression
   while (expr->count) {
     lval* pre = lval_pop(expr, 0);
-    lval* post = lval_eval(e, pre);
-    
+    lval* post = lcontext_eval(ctx, pre);
+
     // Print errors
     if (post->type == LVAL_ERR) {
       lval_println(post);
-      
+
       // TODO: print stack trace
 
       // Cleanup
@@ -200,7 +204,10 @@ lval* native_try(lenv* e, lval* a) {
   // Make our expression a Q-expr
   x->type = LVAL_SEXPR;
   
-  lval* result = lval_eval(e, x);
+  // Get eval environment
+  lcontext* ctx = lenv_get_eval(e);
+
+  lval* result = lcontext_eval(ctx, x);
   
   if (result->type == LVAL_ERR) {
     // Error, return the error string

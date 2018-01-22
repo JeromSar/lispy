@@ -5,12 +5,11 @@
 
 lenv* lenv_new(void) {
   lenv* e = malloc(sizeof(lenv));
+  e->ctx = NULL;
   e->par = NULL;
   e->count = 0;
   e->syms = NULL;
   e->vals = NULL;
-  e->symtable = symtable_new();
-  e->stack = stack_new();
   return e;
 }
 
@@ -21,8 +20,6 @@ void lenv_del(lenv* e) {
   }
   free(e->syms);
   free(e->vals);
-  symtable_del(e->symtable);
-  stack_del(e->stack);
   free(e);
 }
 
@@ -99,4 +96,12 @@ void lenv_put_native(lenv* e, char* name, lnative func) {
   lenv_put(e, k, v);
   lval_del(k);
   lval_del(v);
+}
+
+lcontext* lenv_get_eval(lenv* e) {
+  lenv* c = e;
+  while (c->par != NULL) {
+    c = c->par;
+  }
+  return c->ctx;
 }

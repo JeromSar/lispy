@@ -28,7 +28,7 @@ CWARN_OPTS = -Wall -Wextra -Werror -Wno-unused-parameter
 
 CFLAGS =        $(CSTD) -O0 -c -I$(SRC_DIR) -I$(SRC_DIR)/mpc -ggdb $(CWARN_OPTS)
 CFLAGS_DEPLOY = $(CSTD) -O0 -c -I$(SRC_DIR) -I$(SRC_DIR)/mpc
-CFLAGS_TEST =   $(CSTD) -O0 -c -I$(SRC_DIR) -I$(SRC_DIR)/mpc -I$(TEST_SRC_DIR) $(CWARN_OPTS) -Wno-unused-variable -Wno-unused-function
+CFLAGS_TEST =   $(CSTD) -O0 -c -I$(SRC_DIR) -I$(SRC_DIR)/mpc -I. -ggdb -I$(TEST_SRC_DIR) $(CWARN_OPTS) -Wno-unused-variable -Wno-unused-function
 
 LFLAGS =        -ggdb
 LFLAGS_DEPLOY = -static-libgcc
@@ -40,10 +40,11 @@ LFLAGS_TEST = -I$(TEST_SRC_DIR)
 .PHONY: clean compile deploy run test drmemory debug
 
 # Define sources and objects
-SOURCES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/*/*.c)
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(subst $(SRC_DIR)/,,$(SOURCES:.c=.o)))
-TEST_SOURCES = $(wildcard $(TEST_SRC_DIR)/*.c) $(wildcard $(TEST_SRC_DIR)/*/*.c)
-TEST_OBJECTS = $(addprefix $(TEST_BUILD_DIR)/,$(subst $(TEST_SRC_DIR)/,,$(TEST_SOURCES:.c=.o)))
+SOURCES = $(shell find $(SRC_DIR)/ -type f -name '*.c')
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
+TEST_SOURCES = $(shell find $(TEST_SRC_DIR)/ -type f -name '*.c')
+TEST_HEADERS = $(shell find $(TEST_SRC_DIR)/ -type f -name '*.h')
+TEST_OBJECTS = $(patsubst $(TEST_SRC_DIR)/%.c, $(TEST_BUILD_DIR)/%.o, $(TEST_SOURCES))
 
 # Are we deploying?
 ifeq ($(MAKECMDGOALS),deploy)
@@ -96,7 +97,7 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(COMPILE_FLAGS) $< -o $@
 
 # .c test file
-$(TEST_BUILD_DIR)/%.o: %.c
+$(TEST_BUILD_DIR)/%.o: %.c $(TEST_HEADERS)
 	@mkdir -p $(@D)
 	$(CC) $(COMPILE_FLAGS_TEST) $< -o $@
 	

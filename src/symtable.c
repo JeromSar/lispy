@@ -4,52 +4,33 @@
 
 #define START_AMOUNT 64
 
-typedef struct sym_key_node sym_key_node;
-struct sym_key_node {
-  int key;
-  sym_key_node* next;
-};
-
-struct sym_loc {
-  int row;
-  int col;
-  char* filename; // owned
-};
-
-struct symtable {
-  int len;
-  int cap;
-  sym_loc** syms; // owned, owned
-  sym_key_node* free_syms;
-};
-
-void ensure_cap(symtable* st, int cap) {
-  if (st->cap >= cap) {
+void ensure_cap(symtable* st, int min_cap) {
+  if (st->cap >= min_cap) {
     return;
   }
   
   // Determine new capacity
   int new_cap = st->cap;
-  while (new_cap < cap) {
+  while (new_cap < min_cap) {
     new_cap = new_cap * 2;
   }
   
-  st->syms = realloc(st->syms, new_cap * sizeof(sym_loc));
+  st->syms = realloc(st->syms, new_cap * sizeof(sym_loc*));
+  st->cap = new_cap;
 }
-
 
 symtable* symtable_new() {
   symtable* st = malloc(sizeof(symtable));
-  st->len = START_AMOUNT;
+  st->len = 0;
   st->cap = START_AMOUNT;
-  st->syms = calloc(START_AMOUNT, sizeof(symtable*));
+  st->syms = calloc(START_AMOUNT, sizeof(sym_loc*));
   st->free_syms = NULL;
   return st;
 }
 
 void symtable_del(symtable* st) {
   // Delete all the entries
-  for (int i = st->len - 1; i >= 0; i--) {
+  for (int i = st->len; i > 0; i--) {
     symtable_del_sym(st, i);
   }
   
@@ -70,24 +51,19 @@ int symtable_push_sym(symtable* st, char* str, int row, int col) {
   sl->filename = strdup(str);
   sl->row = row;
   sl->col = col;
-  
-  // Ensure capacity
-  ensure_cap(st, st->len);
-  
-  int key;
-  
+
   // Do we have a free symbol left?
   if (st->free_syms) {
-    key = st->free_syms->key;
+    int key = st->free_syms->key;
     st->free_syms = st->free_syms->next;
-    st->syms[key-1] = sl;
+    st->syms[key - 1] = sl;
     return key;
   } else {
     // New key at the end of the array
-    int idx = st->len;
-    st->syms[idx] = sl;
-    st->len++;
-    return idx + 1;
+    ensure_cap(st, st->len + 1);
+    st->syms[st->len] = sl;
+    st->len = st->len + 1;
+    return st->len;
   }
 }
 
@@ -95,11 +71,8 @@ sym_loc* symtable_lookup_sym(symtable* st, int key) {
   if (key > st->len || key <= 0) {
     return NULL;
   }
-  
-  // The index
-  int i = key - 1;
-  
-  return st->syms[i];
+
+  return st->syms[key - 1];
 }
 
 void symtable_del_sym(symtable* st, int key) {
@@ -107,10 +80,8 @@ void symtable_del_sym(symtable* st, int key) {
     return;
   }
 
-
   // Delete the entry
-  int idx = key - 1;
-  sym_loc* sl = st->syms[idx];
+  sym_loc* sl = st->syms[key - 1];
 
   if (!sl) {
     return;
@@ -118,7 +89,8 @@ void symtable_del_sym(symtable* st, int key) {
 
   free(sl->filename);
   free(sl);
-  
+  st->syms[key - 1] = NULL;
+
   if (st->len == key) {
     // This is was the last key, don't add it to the free-syms list
     st->len--;

@@ -1,4 +1,5 @@
 #include "native.h"
+#include "lcontext.h"
 
 //
 // Conditional
@@ -53,11 +54,14 @@ lval* native_if(lenv* e, lval* a) {
   lval* r;
   a->cell[1]->type = LVAL_SEXPR;
   a->cell[2]->type = LVAL_SEXPR;
+
+  // Get eval environment
+  lcontext* ctx = lenv_get_eval(e);
   
   if (a->cell[0]->num_l) {
-    r = lval_eval(e, lval_pop(a, 1));
+    r = lcontext_eval(ctx, lval_pop(a, 1));
   } else {
-    r = lval_eval(e, lval_pop(a, 2));
+    r = lcontext_eval(ctx, lval_pop(a, 2));
   }
   
   lval_del(a);

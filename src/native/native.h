@@ -3,7 +3,7 @@
 
 #include "../lval.h"
 #include "../lenv.h"
-#include "../eval.h"
+#include "../lcontext.h"
 #include "../util.h"
 #include "../lispy.h"
 #include "../grammar.h"
