@@ -12,9 +12,6 @@
 ; curry
 (assert-equal curry unpack)
 
-; FAIL
-(assert-true false)
-
 ; uncurry
 (assert-equal uncurry pack)
 
