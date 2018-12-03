@@ -15,11 +15,9 @@ struct lcontext {
 
 lcontext* lcontext_new();
 void lcontext_del(lcontext* l);
-lval* lcontext_eval(lcontext* e, lval* v);
-lval* lcontext_eval_sexpr(lcontext* e, lval* v);
-lval* lcontext_call(lcontext* e, lval* f, lval* a);
 
-// Auxiliary
-void lcontext_print(lcontext* ctx);
+lval* lcontext_eval(lcontext* ctx, lenv* e, lval* v);
+lval* lcontext_eval_sexpr(lcontext* ctx, lenv* e, lval* v);
+lval* lcontext_call(lcontext* ctx, lenv* e, lval* f, lval* a);
 
 #endif

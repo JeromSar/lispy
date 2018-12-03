@@ -15,8 +15,8 @@
 
 (load "std/math.lp")
 
-;(load "std/map.lp")
+(load "std/map.lp")
 
-;(load "std/module.lp")
+(load "std/module.lp")
 
-;(load "std/assert.lp")
+(load "std/assert.lp")

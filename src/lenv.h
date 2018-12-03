@@ -16,4 +16,7 @@ void lenv_put(lenv* e, lval* k, lval* v);
 void lenv_put_native(lenv* e, char* name, lnative func);
 lcontext* lenv_get_eval(lenv* e);
 
+// Auxiliary
+void lenv_print(lenv* env, lcontext* ctx);
+
 #endif

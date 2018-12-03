@@ -60,7 +60,6 @@ int main(int argc, char** argv) {
       // Exit in case of error
       if (x->type == LVAL_ERR) {
         lval_println(x);
-        lcontext_print(ctx);
         main_exit(1); // native_load handles errors
       }
 
@@ -107,7 +106,7 @@ int main(int argc, char** argv) {
     lval* x = reader_read(ast);
 
     // Evaluate
-    x = lcontext_eval(ctx, x);
+    x = lcontext_eval(ctx, ctx->env, x);
 
     // Print
     lval_println(x);

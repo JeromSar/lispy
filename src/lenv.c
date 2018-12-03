@@ -122,3 +122,23 @@ lcontext* lenv_get_eval(lenv* e) {
   }
   return c->ctx;
 }
+
+void lenv_print(lenv* env, lcontext* ctx) {
+  symtable* st = ctx->symtable;
+  
+  for (int i = 0; i < env->count; i++) {
+    char* sym = env->syms[i];
+    lval* val = env->vals[i];
+    
+    sym_loc* loc = symtable_lookup_sym(st, val->loc);
+    if (loc == NULL) {
+      printf("ctx: %s, defined at <unknown> (key: %d)\n", sym, val->loc);
+    } else {
+      printf("ctx: %s, defined at %s:%d:%d\n",
+        sym,
+        loc->filename,
+        loc->row,
+        loc->col);
+    } 
+  }  
+}

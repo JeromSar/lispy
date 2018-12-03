@@ -24,13 +24,13 @@ void lcontext_del(lcontext* l) {
   free(l);
 }
 
-lval* lcontext_eval(lcontext* ctx, lval* v) {
+lval* lcontext_eval(lcontext* ctx, lenv* e, lval* v) {
   // TODO: Remove debug: push stack
   stack_push_lval(ctx->stack, ctx, v);
   
   // Evaluate symbol
   if (v->type == LVAL_SYM) {
-    lval* x = lenv_get(ctx->env, v);
+    lval* x = lenv_get(e, v);
     lval_del(v);
 
     stack_pop(ctx->stack);
@@ -40,7 +40,7 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
   // Evaluate S-expressions
   if (v->type == LVAL_SEXPR) {
     stack_pop(ctx->stack);
-    return lcontext_eval_sexpr(ctx, v);
+    return lcontext_eval_sexpr(ctx, e, v);
   }
   
   // All other types remain the same
@@ -48,13 +48,12 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
   return v;
 }
 
-lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
-  
+lval* lcontext_eval_sexpr(lcontext* ctx, lenv* e, lval* v) {
   stack_push_lval(ctx->stack, ctx, v);
 
   // Evaluate children
   for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lcontext_eval(ctx, v->cell[i]);
+    v->cell[i] = lcontext_eval(ctx, e, v->cell[i]);
   }
   
   // Error checking
@@ -92,24 +91,23 @@ lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
     return err;
   }
   
-  lval* ret = lcontext_call(ctx, f, v);;
+  lval* ret = lcontext_call(ctx, e, f, v);
 
   // lcontext_call does cleanup
   stack_pop(ctx->stack);
   return ret;
 }
 
-lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
-
-  lval* rval;
-
+lval* lcontext_call(lcontext* ctx, lenv* e, lval* f, lval* a) {
   // Push stack
   // TODO: is this right?
   stack_push_lval(ctx->stack, ctx, f);
 
+  lval* rval;
+
   // If native, simply call
   if (f->native) {
-    rval = f->native(ctx->env, a);    
+    rval = f->native(e, a);    
     stack_pop(ctx->stack);
     return rval;
   }
@@ -151,7 +149,7 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
       
       // Next formal should be bound to remaining arguments
       lval* nsym = lval_pop(f->formals, 0);
-      lenv_put(f->env, nsym, native_list(ctx->env, a));
+      lenv_put(f->env, nsym, native_list(e, a));
       lval_del(sym);
       lval_del(nsym);
       break;
@@ -202,37 +200,14 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
   }
 
   // Set environment parent to evaluation environment;
-  f->env->par = ctx->env;
-  
+  f->env->par = e;
+
   // Eval and return
   rval = native_eval(
     f->env,
     lval_add(lval_sexpr(),
-    lval_copy(f->body)));
+      lval_copy(f->body)));
 
   stack_pop(ctx->stack);
   return rval;  
-}
-
-void lcontext_print(lcontext* ctx) {
-  
-  lenv* env = ctx->env;
-  symtable* st = ctx->symtable;
-  
-  for (int i = 0; i < env->count; i++) {
-    char* sym = env->syms[i];
-    lval* val = env->vals[i];
-    
-    sym_loc* loc = symtable_lookup_sym(st, val->loc);
-    if (loc == NULL) {
-      printf("ctx: %s, defined at <unknown> (key: %d)\n", sym, val->loc);
-    } else {
-      printf("ctx: %s, defined at %s:%d:%d\n",
-        sym,
-        loc->filename,
-        loc->row,
-        loc->col);
-    }
-      
-  }  
 }
