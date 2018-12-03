@@ -57,19 +57,18 @@ int main(int argc, char** argv) {
 
       lval* x = native_load(ctx->env, args);
 
-      // Print errors
+      // Exit in case of error
       if (x->type == LVAL_ERR) {
-        lval_println(x);
-        lval_del(x);
-        main_exit(1);
+        main_exit(1); // native_load handles errors
       }
+
+      lval_del(x);
     }
 
     main_exit(0);
   }
 
   // Interactive mode
-  reader_set_filename("<stdin>");
   puts("Lispy version 0.0.1");
   puts("Press Ctrl+c to exit\n");
 
@@ -80,36 +79,41 @@ int main(int argc, char** argv) {
     
     // Attempt to parse the user input
     mpc_result_t r;
-    if (mpc_parse("<stdin>", input, parser, &r)) {
-      
-      mpc_ast_t* ast = r.output;
-      
-      /*
-      mpc_ast_print(ast);
-      printf("Number of nodes: %i\n", ast_count_nodes(ast));
-      printf("Number of leaves: %i\n", ast_count_leaves(ast));
-      printf("Number of branches: %i\n", ast_count_branches(ast));
-      putchar('\n');
-      */
-      
-      // Read lval
-      lval* x = reader_read(ast);
-
-      // Evaluate
-      x = lcontext_eval(ctx, x);
-
-      // Print
-      lval_println(x);
-      
-      // Cleanup
-      lval_del(x);
-      mpc_ast_delete(ast);
-    } else {
+    if (!mpc_parse("<stdin>", input, parser, &r)) {
       // Failure: Print the error
       mpc_err_print(r.error);
       mpc_err_delete(r.error);
+      
+      puts("");
+      free(input);
+      continue;
     }
+      
+    mpc_ast_t* ast = r.output;
     
+    // Debug
+    /*
+    mpc_ast_print(ast);
+    printf("Number of nodes: %i\n", ast_count_nodes(ast));
+    printf("Number of leaves: %i\n", ast_count_leaves(ast));
+    printf("Number of branches: %i\n", ast_count_branches(ast));
+    putchar('\n');
+    */
+    
+    // Read lval
+    reader_set_filename("<stdin>");
+    lval* x = reader_read(ast);
+
+    // Evaluate
+    x = lcontext_eval(ctx, x);
+
+    // Print
+    lval_println(x);
+    
+    // Cleanup
+    lval_del(x);
+    mpc_ast_delete(ast);
+
     puts("");
     free(input);
   }

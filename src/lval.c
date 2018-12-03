@@ -407,6 +407,12 @@ void lval_print(lval* v) {
     // Error
     case LVAL_ERR:
       printf("Error: %s", v->err);
+      if (v->err_stack == NULL || v->err_stack->len == 0) {
+        printf(" (no stacktrace)");
+      } else {
+        printf("\n");
+        stack_print(v->err_stack);
+      }
       break;
       
     // Symbol

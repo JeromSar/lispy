@@ -129,6 +129,9 @@ lval* native_load(lenv* e, lval* a) {
     free(err_msg);
     lval_del(a);
     
+    // Print error
+    lval_println(err);
+
     return err;
   }
   
@@ -151,9 +154,7 @@ lval* native_load(lenv* e, lval* a) {
 
     // Print errors
     if (post->type == LVAL_ERR) {
-
       lval_println(post);
-      stack_print(ctx->stack);
 
       // Cleanup
       lval* error = lval_copy(post);

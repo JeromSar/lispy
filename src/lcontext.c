@@ -32,11 +32,14 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
   if (v->type == LVAL_SYM) {
     lval* x = lenv_get(ctx->env, v);
     lval_del(v);
+
+    stack_pop(ctx->stack);
     return x;
   }
 
   // Evaluate S-expressions
   if (v->type == LVAL_SEXPR) {
+    stack_pop(ctx->stack);
     return lcontext_eval_sexpr(ctx, v);
   }
   
@@ -48,6 +51,8 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
 
 lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
   
+  stack_push_lval(ctx->stack, ctx, v);
+
   // Evaluate children
   for (int i = 0; i < v->count; i++) {
     v->cell[i] = lcontext_eval(ctx, v->cell[i]);
@@ -56,17 +61,20 @@ lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
   // Error checking
   for (int i =0; i < v->count; i++) {
     if (v->cell[i]->type == LVAL_ERR) {
+      stack_pop(ctx->stack);
       return lval_take(v, i);
     }
   }
   
   // Empty expression
   if (v->count == 0) {
+    stack_pop(ctx->stack);
     return v;
   }
   
   // Single expression
   if (v->count == 1) {
+    stack_pop(ctx->stack);
     return lval_take(v, 0);
   }
   
@@ -81,11 +89,15 @@ lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
       lval_type_name(LVAL_FUN));
     lval_del(f);
     lval_del(v);
+    stack_pop(ctx->stack);
     return err;
   }
   
+  lval* ret = lcontext_call(ctx, f, v);;
+
   // lcontext_call does cleanup
-  return lcontext_call(ctx, f, v);
+  stack_pop(ctx->stack);
+  return ret;
 }
 
 lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
