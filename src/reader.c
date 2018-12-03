@@ -96,6 +96,7 @@ lval* reader_read(mpc_ast_t* t) {
   else if (strstr(t->tag, "qexpr")) { x = lval_qexpr(); }
   
   if (!x) {
+    // TODO: Convert to error?
     printf("Could not read node, unrecognized tag: '%s'", t->tag);
     main_exit(1);
   }

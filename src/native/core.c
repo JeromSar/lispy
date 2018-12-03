@@ -147,10 +147,12 @@ lval* native_load(lenv* e, lval* a) {
   // Evaluate each expression
   while (expr->count) {
     lval* pre = lval_pop(expr, 0);
-    lval* post = lcontext_eval(ctx, pre);
+    lval* post = lcontext_eval(ctx, e, pre);
 
     // Exit if error
     if (post->type == LVAL_ERR) {
+      lval_print(post);
+
       // Cleanup
       lval* error = lval_copy(post);
       lval_del(post);
@@ -214,7 +216,7 @@ lval* native_try(lenv* e, lval* a) {
   // Get eval environment
   lcontext* ctx = lenv_get_eval(e);
 
-  lval* result = lcontext_eval(ctx, x);
+  lval* result = lcontext_eval(ctx, e, x);
   
   if (result->type == LVAL_ERR) {
     // Error, return the error string

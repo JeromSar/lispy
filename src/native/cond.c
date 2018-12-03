@@ -59,9 +59,9 @@ lval* native_if(lenv* e, lval* a) {
   lcontext* ctx = lenv_get_eval(e);
   
   if (a->cell[0]->num_l) {
-    r = lcontext_eval(ctx, lval_pop(a, 1));
+    r = lcontext_eval(ctx, e, lval_pop(a, 1));
   } else {
-    r = lcontext_eval(ctx, lval_pop(a, 2));
+    r = lcontext_eval(ctx, e, lval_pop(a, 2));
   }
   
   lval_del(a);

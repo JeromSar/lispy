@@ -48,7 +48,7 @@ lval* native_eval(lenv* e, lval* a) {
     
   lval* x = lval_take(a, 0);
   x->type = LVAL_SEXPR;
-  return lcontext_eval(ctx, x);
+  return lcontext_eval(ctx, e, x);
 }
 
 lval* native_join(lenv* e, lval* a) {

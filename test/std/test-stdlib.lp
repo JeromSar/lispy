@@ -2,8 +2,6 @@
 ; Lispy standard library tests
 ;
 
-; debug
-
 (load "std/stdlib.lp")
 
 ; Test stdlib packages

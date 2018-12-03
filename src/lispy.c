@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
       
     mpc_ast_t* ast = r.output;
     
-    // Debug
+    // TODO: Clean
     /*
     mpc_ast_print(ast);
     printf("Number of nodes: %i\n", ast_count_nodes(ast));
@@ -118,7 +118,6 @@ int main(int argc, char** argv) {
     puts("");
     free(input);
   }
-  
   
   main_exit(0);
 }
