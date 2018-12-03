@@ -28,10 +28,17 @@ lval* lval_double(double x) {
 }
 
 // Create a new error type lval
-lval* lval_err(char* fmt, ...) {
+lval* lval_err(stack* st, char* fmt, ...) {
   lval* v = malloc(sizeof(lval));
   v->loc = 0;
   v->type = LVAL_ERR;
+
+  // Dupe err stack
+  if (st) {
+    v->err_stack = stack_copy(st);
+  } else {
+    v->err_stack = NULL;
+  }
   
   // Create a va list and init it
   va_list va;
@@ -119,6 +126,8 @@ lval* lval_qexpr(void) {
 
 void lval_del(lval* v) {
   
+  // TODO: Free loc
+
   switch (v->type) {
     // Don't do anyting for numbers
     case LVAL_LONG:
@@ -127,6 +136,9 @@ void lval_del(lval* v) {
       
     case LVAL_ERR:
       free(v->err);
+      if (v->err_stack) {
+        stack_del(v->err_stack);
+      }
       break;
       
     case LVAL_SYM:
@@ -145,7 +157,7 @@ void lval_del(lval* v) {
       }
       break;
      
-    // Delete all elements in the S-expression cells
+    // Delete all elements in the S/Q-expression cells
     case LVAL_SEXPR:
     case LVAL_QEXPR:
       for (int i = 0; i < v->count; i++) {
@@ -162,10 +174,10 @@ void lval_del(lval* v) {
 // Creates a value-equal duplicate of the lval
 lval* lval_copy(lval* v) {
   lval* x = malloc(sizeof(lval));
-  x->loc = 0;
   
+  x->loc = 0;
   if (v->loc) {
-    // TODO: Copy loc?
+    x->loc = v->loc;
   }
 
   x->type = v->type;
@@ -175,11 +187,18 @@ lval* lval_copy(lval* v) {
     case LVAL_LONG: x->num_l = v->num_l; break;
     case LVAL_DOUBLE: x->num_d = v->num_d; break;
     
-    // Copy strings using malloc and strcopy
+    // Deep copy error message and stack
     case LVAL_ERR:
       x->err = malloc(strlen(v->err) + 1);
       strcpy(x->err, v->err);
+      if (v->err_stack) {
+        x->err_stack = stack_copy(v->err_stack);
+      } else {
+        x->err_stack = NULL;
+      }
       break;
+
+    // Copy strings using malloc and strcopy
     case LVAL_SYM:
       x->sym = malloc(strlen(v->sym) + 1);
       strcpy(x->sym, v->sym);
@@ -276,7 +295,6 @@ int lval_is_num(lval* x) {
       return 0;
   }
 }
-
 
 //
 // S/Q-Expression operations

@@ -4,6 +4,8 @@
 typedef struct lcontext lcontext;
 
 #include "lval.h"
+#include "stack.h"
+#include "lval.h"
 
 struct lcontext {
   stack* stack;
@@ -16,6 +18,8 @@ void lcontext_del(lcontext* l);
 lval* lcontext_eval(lcontext* e, lval* v);
 lval* lcontext_eval_sexpr(lcontext* e, lval* v);
 lval* lcontext_call(lcontext* e, lval* f, lval* a);
-void lcontext_handle_error(lcontext* ctx, lval* err);
+
+// Auxiliary
+void lcontext_print(lcontext* ctx);
 
 #endif

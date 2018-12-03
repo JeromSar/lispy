@@ -15,7 +15,7 @@ static int create_sym_loc(mpc_ast_t* t) {
   }
   
   mpc_state_t state = t->state;
-  
+
   return symtable_push_sym(
     reader_symtable,
     reader_filename,
@@ -28,7 +28,7 @@ static lval* reader_read_long(mpc_ast_t* t) {
   errno = 0;
   long x = strtol(t->contents, NULL, 10);
   if (errno == ERANGE || errno == EINVAL) {
-    return lval_err("Invalid long number: %s", t->contents);
+    return lval_err(NULL, "Invalid long number: %s", t->contents);
   }
   
   lval* r = lval_long(x);
@@ -40,7 +40,7 @@ static lval* reader_read_double(mpc_ast_t* t) {
   errno = 0;
   double x = strtod(t->contents, NULL);
   if (errno == ERANGE || errno == EINVAL) {
-    return lval_err("Invalid double number: %s", t->contents);
+    return lval_err(NULL, "Invalid double number: %s", t->contents);
   }
   
   lval* r = lval_double(x);
@@ -150,5 +150,4 @@ int ast_count_branches(mpc_ast_t* t) {
   }
   return 0;
 }
-
 

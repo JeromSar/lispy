@@ -37,15 +37,16 @@ int main(int argc, char** argv) {
   // Setup signals
   signal(SIGINT, main_signal);
   signal(SIGTERM, main_signal);
-  
-  // Setup stack
 
   // Create parser
   parser = grammar_create();
    
-  // Create evaluationenvironment
+  // Create evaluation context
   ctx = lcontext_new();
   native_addall(ctx->env);
+  
+  // Setup reader
+  reader_set_symtable(ctx->symtable);
 
   // A list of files is supplied
   if (argc > 1) {

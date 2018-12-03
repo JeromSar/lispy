@@ -12,7 +12,7 @@
 
 #define LASSERT(args, cond, fmt, ...) \
   if (!(cond)) { \
-    lval* err = lval_err(fmt, ##__VA_ARGS__); \
+    lval* err = lval_err(lenv_get_eval(e)->stack, fmt, ##__VA_ARGS__); \
     lval_del(args); \
     return err; \
   }

@@ -1,7 +1,7 @@
 #include "native.h"
 
 // Operations on double-type
-lval* op_double(op_type type, double a, double b) {
+lval* op_double(lenv* e, op_type type, double a, double b) {
   
   switch (type) {
   
@@ -16,16 +16,22 @@ lval* op_double(op_type type, double a, double b) {
       
     case DIV:
       if (b == 0) {
-        return lval_err("Division by zero");
+        return lval_err(
+          lenv_get_eval(e)->stack,
+          "Division by zero");
       }
       return lval_double(a / b);
 
     // TODO: Stringify
     case MOD:
-      return lval_err("Cannot perform '%i' operation on double type.", type);
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "Cannot perform '%i' operation on double type.", type);
       
     case POW:
-      return lval_err("Cannot perform '%i' operation on double type.", type);
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "Cannot perform '%i' operation on double type.", type);
       
     case MIN:
       return lval_double(a < b ? a : b);
@@ -46,6 +52,8 @@ lval* op_double(op_type type, double a, double b) {
       return lval_long(a <= b ? 1 : 0);
 
     default:
-      return lval_err("No double operation: %i", (int) type);
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "No double operation: %i", (int) type);
   }
 }

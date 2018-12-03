@@ -6,10 +6,17 @@
 ; Order is important. Mind your step!
 
 (load "std/atom.lp")
+
 (load "std/fun.lp")
+
 (load "std/list.lp")
+
 (load "std/cond.lp")
+
 (load "std/math.lp")
-(load "std/map.lp")
-(load "std/module.lp")
-(load "std/assert.lp")
+
+;(load "std/map.lp")
+
+;(load "std/module.lp")
+
+;(load "std/assert.lp")

@@ -27,7 +27,11 @@ lval* helper_var(lenv* e, lval* a, char* func) {
     func,
     syms->count,
     a->count-1);
-    
+  
+  // TODO: Remove debug
+  printf("def: Printing stack -- ");
+  stack_print(lenv_get_eval(e)->stack);
+  
   for (int i = 0; i < syms->count; i++) {
     // def: define globally
     if (streq(func, "def")) {
@@ -119,20 +123,25 @@ lval* native_load(lenv* e, lval* a) {
     mpc_err_delete(r.error);
     
     // Create new error
-    lval* err = lval_err("Could not load file: %s, ", err_msg);
+    lval* err = lval_err(
+      lenv_get_eval(e)->stack,
+      "Could not load file: %s, ", err_msg);
     free(err_msg);
     lval_del(a);
     
     return err;
   }
   
-  // Read
+  // Setup
+  reader_set_symtable(lenv_get_eval(e)->symtable);
   reader_set_filename(a->cell[0]->str);
+  
+  // Read
   lval* expr = reader_read(r.output);
   //mpc_ast_print(r.output);
   mpc_ast_delete(r.output);
   
-  // Get eval environment
+  // Get context
   lcontext* ctx = lenv_get_eval(e);
   
   // Evaluate each expression
@@ -142,9 +151,9 @@ lval* native_load(lenv* e, lval* a) {
 
     // Print errors
     if (post->type == LVAL_ERR) {
-      lval_println(post);
 
-      // TODO: print stack trace
+      lval_println(post);
+      stack_print(ctx->stack);
 
       // Cleanup
       lval* error = lval_copy(post);
@@ -189,7 +198,9 @@ lval* native_error(lenv* e, lval* a) {
   LASSERT_ARGS(a, "error", 1);
   LASSERT_TYPE(a, "error", 0, LVAL_STR);
   
-  lval* err = lval_err(a->cell[0]->str);
+  lval* err = lval_err(
+    lenv_get_eval(e)->stack,
+    a->cell[0]->str);
   
   lval_del(a);
   return err;

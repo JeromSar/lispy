@@ -2,6 +2,9 @@
 #include "util.h"
 #include "symtable.h"
 
+// printf
+#include "stdio.h"
+
 #define START_AMOUNT 64
 
 void ensure_cap(symtable* st, int min_cap) {

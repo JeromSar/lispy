@@ -53,7 +53,9 @@ lval* native_str(lenv* e, lval* a) {
       x = lval_str("<q-expr>");
       break;
     default:
-      x = lval_err(strcat("Conversion not supported for type: ",
+      x = lval_err(
+        lenv_get_eval(e)->stack,
+        strcat("Conversion not supported for type: ",
         lval_type_name(par->type)));
       break;
   }

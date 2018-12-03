@@ -89,7 +89,7 @@ drmemory: compile
 
 # Target - debug
 debug: compile
-	gdb $(DIST_DIR)/$(TARGET)
+	gdb -ex=run --args $(DIST_DIR)/$(TARGET) "test/std/test-stdlib.lp"
 
 # .c source file
 $(BUILD_DIR)/%.o: %.c

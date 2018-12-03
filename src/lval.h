@@ -1,17 +1,14 @@
 #ifndef LVAL_H
 #define LVAL_H
 
-#include "mpc/mpc.h"
-#include "symtable.h"
-#include "stack.h"
-
-// Some typedefs
 // lenv type is defined here to avoid cyclic dependency
 typedef struct lval lval;
 typedef struct lenv lenv;
 typedef lval* (*lnative)(lenv*, lval*);
 
-// Only include lenv here, after typedefs
+#include "mpc/mpc.h"
+#include "symtable.h"
+#include "stack.h"
 #include "lenv.h"
 #include "lcontext.h"
 
@@ -46,7 +43,10 @@ struct lval {
     long num_l;
 
     // LVAL_ERR: Error message
-    char* err;
+    struct {
+      char* err;
+      stack* err_stack;
+    };
       
     // LVAL_SYM: Symbol
     char* sym;
@@ -77,7 +77,7 @@ enum { LVAL_DOUBLE, LVAL_LONG, LVAL_ERR,   LVAL_SYM,
 // Heap constructors: lval
 lval* lval_long(long x);
 lval* lval_double(double x);
-lval* lval_err(char* fmt, ...);
+lval* lval_err(stack* st, char* fmt, ...);
 lval* lval_sym(char* s);
 lval* lval_str(char* str);
 lval* lval_fun(lnative func);

@@ -2,26 +2,26 @@
 #define SYMTABLE_H
 
 typedef struct sym_loc sym_loc;
+typedef struct sym_key_node sym_key_node;
+typedef struct symtable symtable;
+
 struct sym_loc {
   char* filename; // owned
   int row;
   int col;
 };
 
-typedef struct sym_key_node sym_key_node;
 struct sym_key_node {
   int key;
   sym_key_node* next;
 };
 
-typedef struct symtable symtable;
 struct symtable {
   int len;
   int cap;
   sym_loc** syms; // owned, owned
   sym_key_node* free_syms;
 };
-
 
 symtable* symtable_new(void);
 

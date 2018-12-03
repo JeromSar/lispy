@@ -1,7 +1,7 @@
 #include "native.h"
 
 // Operations on long-type
-lval* op_long(op_type type, long a, long b) {
+lval* op_long(lenv* e, op_type type, long a, long b) {
   
   switch (type) {
   
@@ -16,13 +16,17 @@ lval* op_long(op_type type, long a, long b) {
       
     case DIV:
       if (b == 0) {
-        return lval_err("Division by zero");
+        return lval_err(
+          lenv_get_eval(e)->stack,
+          "Division by zero");
       }
       return lval_long(a / b);
       
     case MOD:
       if (b == 0) {
-        return lval_err("Division by zero");
+        return lval_err(
+          lenv_get_eval(e)->stack,
+          "Division by zero");
       }
       return lval_long(a % b);
       
@@ -48,6 +52,8 @@ lval* op_long(op_type type, long a, long b) {
       return lval_long(a <= b ? 1 : 0);
 
     default:
-      return lval_err("No long operation: %i", (int) type);
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "No long operation: %i", (int) type);
   }
 }

@@ -25,6 +25,9 @@ void lcontext_del(lcontext* l) {
 }
 
 lval* lcontext_eval(lcontext* ctx, lval* v) {
+  // TODO: Remove debug: push stack
+  stack_push_lval(ctx->stack, ctx, v);
+  
   // Evaluate symbol
   if (v->type == LVAL_SYM) {
     lval* x = lenv_get(ctx->env, v);
@@ -36,6 +39,8 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
   if (v->type == LVAL_SEXPR) {
     return lcontext_eval_sexpr(ctx, v);
   }
+  
+  stack_pop(ctx->stack);
   
   // All other types remain the same
   return v;
@@ -69,6 +74,7 @@ lval* lcontext_eval_sexpr(lcontext* ctx, lval* v) {
   lval* f = lval_pop(v, 0);
   if (f->type != LVAL_FUN) {
     lval* err = lval_err(
+      ctx->stack,
       "S-Expression starts with incorrect type. "
       "Got %s, Expected %s.",
       lval_type_name(f->type),
@@ -86,20 +92,13 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
 
   lval* rval;
 
-  if (f->loc) {
-    stack_push(ctx->stack, f->loc);
-  } else {
-    stack_push(ctx->stack, 0);
-  }
+  // Push stack
+  // TODO: is this right?
+  stack_push_lval(ctx->stack, ctx, f);
 
   // If native, simply call
   if (f->native) {
-    rval = f->native(ctx->env, a);
-    
-    if (rval->type == LVAL_ERR) {
-      lcontext_handle_error(ctx, rval);
-    }
-    
+    rval = f->native(ctx->env, a);    
     stack_pop(ctx->stack);
     return rval;
   }
@@ -115,12 +114,13 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
     if (f->formals->count == 0) {
       lval_del(a);
       rval = lval_err(
+        ctx->stack,
         "Function passed too many arguments. "
         "Got %i, Expected %i.",
         given,
         total);
 
-      lcontext_handle_error(ctx, rval);
+      stack_pop(ctx->stack);
       return rval;
     }
 
@@ -132,7 +132,9 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
       // Ensure this is the second to last symbol
       if (f->formals->count != 1) {
         lval_del(a);
-        return lval_err("Function format invalid. "
+        return lval_err(
+          ctx->stack,
+          "Function format invalid. "
           "Symbol '&' not followed by single symbol.");
       }
       
@@ -159,27 +161,28 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
   // If '&' remains in formal list, bind to empty list
   if (f->formals->count > 0 &&
     streq(f->formals->cell[0]->sym, "&")) {
-      // Check that & is not passed invalidly
-      
-      if (f->formals->count != 2) {
-        rval = lval_err("Function format invalid. "
-          "Symbol '&' not followed by single symbol.");
-        lcontext_handle_error(ctx, rval);
-        return rval;
-      }
-      
-      // Pop and delete '&'
-      lval_del(lval_pop(f->formals, 0));
-      
-      // Pop next symbol, create empty list
-      lval* sym = lval_pop(f->formals, 0);
-      lval* val = lval_qexpr();
-      
-      // Bind to environment and delete
-      lenv_put(f->env, sym, val);
-      lval_del(sym);
-      lval_del(val);
+
+    // Check that & is not passed invalidly
+    if (f->formals->count != 2) {
+      rval = lval_err(
+        ctx->stack,
+        "Function format invalid. "
+        "Symbol '&' not followed by single symbol.");
+      return rval;
     }
+    
+    // Pop and delete '&'
+    lval_del(lval_pop(f->formals, 0));
+    
+    // Pop next symbol, create empty list
+    lval* sym = lval_pop(f->formals, 0);
+    lval* val = lval_qexpr();
+    
+    // Bind to environment and delete
+    lenv_put(f->env, sym, val);
+    lval_del(sym);
+    lval_del(val);
+  }
   
   // Partially evaulated?
   if (f->formals->count != 0) {
@@ -193,37 +196,32 @@ lval* lcontext_call(lcontext* ctx, lval* f, lval* a) {
   // Eval and return
   rval = native_eval(
     f->env,
-    lval_add(lval_sexpr() ,
+    lval_add(lval_sexpr(),
     lval_copy(f->body)));
-
-  if (rval->type == LVAL_ERR) {
-    lcontext_handle_error(ctx, rval);
-  }
 
   stack_pop(ctx->stack);
   return rval;  
 }
 
-void lcontext_handle_error(lcontext* ctx, lval* err) {
-  if (err->type != LVAL_ERR) {
-    printf("Error: Handling error of non-error type!");
-    return;
-  }
+void lcontext_print(lcontext* ctx) {
   
-  // Print stack trace
-  stack* st = ctx->stack;
-  symtable* syms = ctx->symtable;
+  lenv* env = ctx->env;
+  symtable* st = ctx->symtable;
   
-  lval_println(err);
-  for (int i = 0; i < st->len; i++) {
-    sym_loc* s = symtable_lookup_sym(syms, st->syms[i]);
-    if (s != NULL) {
-      printf("\tat %s, line %d, column %d\n",
-        s->filename,
-        s->row,
-        s->col);
+  for (int i = 0; i < env->count; i++) {
+    char* sym = env->syms[i];
+    lval* val = env->vals[i];
+    
+    sym_loc* loc = symtable_lookup_sym(st, val->loc);
+    if (loc == NULL) {
+      printf("ctx: %s, defined at <unknown> (key: %d)\n", sym, val->loc);
     } else {
-      printf("\tat <unknown>, line ?, column ?\n");
+      printf("ctx: %s, defined at %s:%d:%d\n",
+        sym,
+        loc->filename,
+        loc->row,
+        loc->col);
     }
-  }
+      
+  }  
 }

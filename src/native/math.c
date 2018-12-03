@@ -9,7 +9,9 @@ lval* helper_op(lenv* e, lval* a, op_type type) {
   for (int i = 0; i < a->count; i++) {
     if (!lval_is_num(a->cell[i])) {
       lval_del(a);
-      return lval_err("Cannot operate on non-number");
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "Cannot operate on non-number");
     }
   }
   
@@ -39,7 +41,9 @@ lval* helper_op(lenv* e, lval* a, op_type type) {
     default:
       lval_del(a);
       lval_del(x);
-      return lval_err("Cannot perform unary negation on %s",
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "Cannot perform unary negation on %s",
         lval_type_name(xtype));
     
     }
@@ -74,18 +78,20 @@ lval* helper_op(lenv* e, lval* a, op_type type) {
     switch (xtype) {
     
     case LVAL_LONG:
-      step = op_long(type, x->num_l, y->num_l);
+      step = op_long(e, type, x->num_l, y->num_l);
       break;
       
     case LVAL_DOUBLE:
-      step = op_double(type, x->num_d, y->num_d);
+      step = op_double(e, type, x->num_d, y->num_d);
       break;
       
     default:
       lval_del(x);
       lval_del(y);
       lval_del(a);
-      return lval_err("Unsupported operation type: %s",
+      return lval_err(
+        lenv_get_eval(e)->stack,
+        "Unsupported operation type: %s",
         lval_type_name(xtype));
     }
     

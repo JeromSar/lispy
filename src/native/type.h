@@ -20,9 +20,9 @@ typedef enum op_type {
 } op_type;
 
 // double.c
-lval* op_double(op_type type, double a, double b);
+lval* op_double(lenv* e, op_type type, double a, double b);
 
 // long.c
-lval* op_long(op_type type, long a, long b);
+lval* op_long(lenv* e, op_type type, long a, long b);
 
 #endif

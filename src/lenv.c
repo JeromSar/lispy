@@ -55,7 +55,10 @@ lval* lenv_get(lenv* e, lval* k) {
     return lenv_get(e->par, k);
   }
 
-  return lval_err("Unbound symbol: '%s'", k->sym);
+  return lval_err(
+    lenv_get_eval(e)->stack,
+    "Unbound symbol: '%s'",
+    k->sym);
 }
 
 void lenv_def(lenv* e, lval* k, lval* v) {
@@ -91,8 +94,23 @@ void lenv_put(lenv* e, lval* k, lval* v) {
 }
 
 void lenv_put_native(lenv* e, char* name, lnative func) {
+  
+  // TODO: Should this be /here/?
+  // Add new symbol
+  lcontext* ctx = lenv_get_eval(e);
+  char* fullref = malloc((50 + strlen(name)) * sizeof(char));
+  fullref[0] = '\0';
+  strcat(fullref, "<internal:");
+  strcat(fullref, name);
+  strcat(fullref, ">");
+  int key = symtable_push_sym(ctx->symtable, fullref, 0, 0);
+  free(fullref);
+  
   lval* k = lval_sym(name);
   lval* v = lval_fun(func);
+  
+  v->loc = key;
+  
   lenv_put(e, k, v);
   lval_del(k);
   lval_del(v);

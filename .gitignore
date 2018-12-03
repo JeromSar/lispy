@@ -12,3 +12,6 @@ Thumbs.db
 
 # Some testing files
 /*.lp
+
+# Other files
+*.pdf
