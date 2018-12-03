@@ -47,7 +47,6 @@ lval* lenv_get(lenv* e, lval* k) {
       // Return a copy
       return lval_copy(e->vals[i]);
     }
-  
   }
   
   // Check parent environment

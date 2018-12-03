@@ -59,6 +59,8 @@ int main(int argc, char** argv) {
 
       // Exit in case of error
       if (x->type == LVAL_ERR) {
+        lval_println(x);
+        lcontext_print(ctx);
         main_exit(1); // native_load handles errors
       }
 

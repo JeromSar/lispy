@@ -43,9 +43,8 @@ lval* lcontext_eval(lcontext* ctx, lval* v) {
     return lcontext_eval_sexpr(ctx, v);
   }
   
-  stack_pop(ctx->stack);
-  
   // All other types remain the same
+  stack_pop(ctx->stack);
   return v;
 }
 

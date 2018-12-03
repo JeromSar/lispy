@@ -112,13 +112,18 @@ stack_entry* stack_peek(stack* st) {
 }
 
 void stack_print(stack* st) {
-  printf("Stacktrace:\n");
   for (int i = st->len-1; i >= 0; i--) {
     stack_entry* se = st->entries[i];
-    printf("\tat %s:%d:%d\n",
-      se->sym,
-      se->row,
-      se->col
-    );
+    if (se->row == 0 && se->col == 0) {
+      printf("\tat %s\n",
+        se->sym
+      );
+    } else {
+      printf("\tat %s:%d:%d\n",
+        se->sym,
+        se->row,
+        se->col
+      );
+    }
   }
 }

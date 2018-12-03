@@ -128,9 +128,6 @@ lval* native_load(lenv* e, lval* a) {
       "Could not load file: %s, ", err_msg);
     free(err_msg);
     lval_del(a);
-    
-    // Print error
-    lval_println(err);
 
     return err;
   }
@@ -152,10 +149,8 @@ lval* native_load(lenv* e, lval* a) {
     lval* pre = lval_pop(expr, 0);
     lval* post = lcontext_eval(ctx, pre);
 
-    // Print errors
+    // Exit if error
     if (post->type == LVAL_ERR) {
-      lval_println(post);
-
       // Cleanup
       lval* error = lval_copy(post);
       lval_del(post);
