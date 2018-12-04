@@ -11,6 +11,7 @@ typedef lval* (*lnative)(lenv*, lval*);
 #include "stack.h"
 #include "lenv.h"
 #include "lcontext.h"
+#include "util/buffer.h"
 
 struct lenv {
   
@@ -99,9 +100,9 @@ lval* lval_join(lval* x, lval* y);
 
 // Print operations
 char* lval_type_name(int t);
-void lval_expr_print(lval* v, char open, char close);
-void lval_str_print(lval* v);
-void lval_print(lval* v);
-void lval_println(lval* v);
+void lval_expr_print(buffer* b, lval* v, char open, char close);
+void lval_str_print(buffer* b, lval* v);
+void lval_print(buffer* b, lval* v);
+void lval_println(buffer* b, lval* v);
 
 #endif

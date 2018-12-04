@@ -1,5 +1,5 @@
 #include "lcontext.h"
-#include "util.h" // streq
+#include "util/util.h" // streq
 #include "lval.h"
 #include "native/native.h"
 #include "lenv.h"

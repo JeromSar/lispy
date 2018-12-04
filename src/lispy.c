@@ -3,7 +3,7 @@
 #include <signal.h>
 
 #include "lispy.h"
-#include "util.h"
+#include "util/util.h"
 #include "console.h"
 #include "grammar.h"
 #include "lval.h"
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
       // Exit in case of error
       if (x->type == LVAL_ERR) {
-        lval_println(x);
+        lval_println(buffer_stdout(), x);
         main_exit(1); // native_load handles errors
       }
 
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
     x = lcontext_eval(ctx, ctx->env, x);
 
     // Print
-    lval_println(x);
+    lval_println(buffer_stdout(), x);
     
     // Cleanup
     lval_del(x);

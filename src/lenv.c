@@ -1,6 +1,6 @@
 #include "lenv.h"
 #include "lval.h"
-#include "util.h" // streq
+#include "util/util.h" // streq
 #include "stack.h"
 
 lenv* lenv_new(void) {

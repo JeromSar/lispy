@@ -30,7 +30,7 @@ lval* helper_var(lenv* e, lval* a, char* func) {
   
   // TODO: Remove debug
   printf("def: Printing stack -- ");
-  stack_print(lenv_get_eval(e)->stack);
+  stack_print(lenv_get_eval(e)->stack, buffer_stdout());
   
   for (int i = 0; i < syms->count; i++) {
     // def: define globally
@@ -151,7 +151,7 @@ lval* native_load(lenv* e, lval* a) {
 
     // Exit if error
     if (post->type == LVAL_ERR) {
-      lval_print(post);
+      lval_print(buffer_stdout(), post);
 
       // Cleanup
       lval* error = lval_copy(post);
@@ -172,7 +172,7 @@ lval* native_load(lenv* e, lval* a) {
 
 lval* native_show(lenv* e, lval* a) {
   for (int i = 0; i < a->count; i++) {
-    lval_print(a->cell[i]); putchar(' ');
+    lval_print(buffer_stdout(), a->cell[i]); putchar(' ');
   }
 
   /* Print a newline and delete arguments */

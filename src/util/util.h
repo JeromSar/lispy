@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include<stdbool.h>
+#include <stdbool.h>
 
 long lpow(long x, long y);
 bool streq(const char* a, const char* b);

@@ -1,7 +1,7 @@
 #include <stdlib.h> // malloc
 #include <stdio.h> // printf
 
-#include "util.h" // strdup
+#include "util/util.h" // strdup
 #include "stack.h"
 
 static stack_entry UNKNOWN_ENTRY = {
@@ -111,7 +111,7 @@ stack_entry* stack_peek(stack* st) {
   return st->entries[st->len - 1];
 }
 
-void stack_print(stack* st) {
+void stack_print(stack* st, buffer* b) {
   for (int i = st->len-1; i >= 0; i--) {
     stack_entry* se = st->entries[i];
     if (se->row == 0 && se->col == 0) {
@@ -119,7 +119,7 @@ void stack_print(stack* st) {
         se->sym
       );
     } else {
-      printf("\tat %s:%d:%d\n",
+      buffer_printf(b, "\tat %s:%d:%d\n",
         se->sym,
         se->row,
         se->col

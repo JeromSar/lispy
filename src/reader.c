@@ -1,6 +1,6 @@
 #include "lval.h"
 #include "mpc/mpc.h"
-#include "util.h" // streq
+#include "util/util.h" // streq
 #include "lispy.h" // main_exit
 #include "reader.h"
 

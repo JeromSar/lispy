@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h" // bool
+#include "util/util.h" 
 
 long lpow(long x, long y) {
   while (y > 1) {

@@ -4,7 +4,7 @@
 #include "../lval.h"
 #include "../lenv.h"
 #include "../lcontext.h"
-#include "../util.h"
+#include "../util/util.h"
 #include "../lispy.h"
 #include "../grammar.h"
 #include "../mpc/mpc.h"

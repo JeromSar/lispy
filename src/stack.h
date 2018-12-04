@@ -9,6 +9,7 @@ typedef struct stack_entry stack_entry;
 #include "symtable.h" // sym_loc
 #include "lcontext.h" //lcontext
 #include "lval.h" // lval
+#include "util/buffer.h"
 
 #define STACK_SIZE 512
 
@@ -33,6 +34,6 @@ bool stack_push_lval(stack* st, lcontext* ctx, lval* val);
 bool stack_pop(stack* st);
 stack_entry* stack_peek(stack* st);
 
-void stack_print(stack* st);
+void stack_print(stack* st, buffer* b);
 
 #endif

@@ -3,7 +3,8 @@
 #include <stdarg.h>
 
 #include "lval.h"
-#include "util.h" // streq
+#include "util/util.h" // streq
+#include "util/buffer.h"
 
 //
 // lval heap constructors
@@ -365,95 +366,97 @@ char* lval_type_name(int type) {
 }
 
 // Prints an expression type lval
-void lval_expr_print(lval* v, char open, char close) {
-  putchar(open);
+void lval_expr_print(buffer* b, lval* v, char open, char close) {
+  buffer_putchar(b, open);
   for (int i = 0; i < v->count; i++) {
     // Print contained value
-    lval_print(v->cell[i]);
+    lval_print(b, v->cell[i]);
     
     // Don't print the trailing space if this is the last element
     if (i != (v->count-1)) {
-      putchar(' ');
+      buffer_putchar(b, ' ');
     }
   }
-  putchar(close);
+  buffer_putchar(b, close);
 }
 
-void lval_str_print(lval* v) {
+void lval_str_print(buffer* b, lval* v) {
   // Make a copy
   char* escaped = malloc(strlen(v->str) + 1);
   strcpy(escaped, v->str);
   
   // Pass through mpc
   escaped = mpcf_escape(escaped);
-  printf("\"%s\"", escaped);
+  buffer_printf(b, "\"%s\"", escaped);
   
   // Free
   free(escaped);
 }
 
 // Prints a lval
-void lval_print(lval* v) {
+void lval_print(buffer* b, lval* v) {
   switch (v->type) {
-    // Number
+    // Long
     case LVAL_LONG:
-      printf("%ld", v->num_l);
+      buffer_printf(b, "%ld", v->num_l);
       break;
       
+    // Double
     case LVAL_DOUBLE:
-      printf("%f", v->num_d);
+      buffer_printf(b, "%f", v->num_d);
       break;
 
     // Error
     case LVAL_ERR:
-      printf("Error: %s", v->err);
+      buffer_printf(b, "Error: %s", v->err);
       if (v->err_stack == NULL || v->err_stack->len == 0) {
-        printf(" (no stacktrace)");
+        buffer_printf(b, " (no stacktrace)");
       } else {
-        printf("\n");
-        stack_print(v->err_stack);
+        buffer_printf(b, "\n");
+        stack_print(v->err_stack, b);
       }
       break;
       
     // Symbol
     case LVAL_SYM:
-      printf("%s", v->sym);
+      buffer_printf(b, "%s", v->sym);
       break;
       
+    // String
     case LVAL_STR:
-      lval_str_print(v);
+      lval_str_print(b, v);
       break;
      
     // Function
     case LVAL_FUN:
       if (v->native) {
-        printf("<native>");
+        buffer_printf(b, "<native>");
       } else {
-        printf("(\\ ");
-        lval_print(v->formals);
-        putchar(' ');
-        lval_print(v->body);
-        putchar(')');
+        buffer_printf(b, "(\\ ");
+        lval_print(b, v->formals);
+        buffer_putchar(b, ' ');
+        lval_print(b, v->body);
+        buffer_putchar(b, ')');
       }
       break;
       
     // Expressions
     case LVAL_SEXPR:
-      lval_expr_print(v, '(', ')');
+      lval_expr_print(b, v, '(', ')');
       break;
     case LVAL_QEXPR:
-      lval_expr_print(v, '{', '}');
+      lval_expr_print(b, v, '{', '}');
       break;
 
     // Unknown value type
     default:
-      printf("Error: Value type can not be printed: %d", v->type);
+      buffer_printf(b, "Error: Value type can not be printed: %d", v->type);
       break;
   }
 }
 
-void lval_println(lval* v) {
-  lval_print(v);
-  putchar('\n');
+void lval_println(buffer* b, lval* v) {
+  lval_print(b, v);
+  buffer_putchar(b, '\n');
 }
 
