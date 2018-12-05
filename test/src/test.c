@@ -4,3 +4,4 @@
 #include "test_stack.h"
 #include "test_symtable.h"
 #include "test_buffer.h"
+#include "test_lval.h"

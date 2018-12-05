@@ -37,7 +37,7 @@ LFLAGS_TEST = -I$(TEST_SRC_DIR)
 #
 # ========== NO CONFIG BEYOND THIS LINE ==========
 #
-.PHONY: clean compile deploy run test drmemory debug
+.PHONY: clean compile deploy run test testint testext drmemory debug
 
 # Define sources and objects
 SOURCES = $(shell find $(SRC_DIR)/ -type f -name '*.c')
@@ -79,8 +79,14 @@ run: $(DIST_DIR)/$(TARGET)
 	$(DIST_DIR)/$(TARGET)
 
 # Target - test
-test: $(DIST_DIR)/test $(DIST_DIR)/$(TARGET)
+test: testint testext
+
+# Target - testint
+testint: $(DIST_DIR)/test $(DIST_DIR)/$(TARGET)
 	$(DIST_DIR)/test
+  
+# Target - testext
+testext: $(DIST_DIR)/$(TARGET)
 	$(DIST_DIR)/$(TARGET) "test/std/test-stdlib.lp"
 
 # Target - drmemory

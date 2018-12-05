@@ -59,6 +59,7 @@ int buffer_printf(buffer* b, const char *format, ...) {
 void buffer_putchar(buffer* b, char c) {
     if (b == &bstdout) {
         putchar(c);
+        return;
     }
     
     buffer_ensure(b, 2);

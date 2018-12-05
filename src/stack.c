@@ -71,13 +71,14 @@ bool stack_push(stack* st, sym_loc* loc) {
 
 bool stack_push_lval(stack* st, lcontext* ctx, lval* val) {
   if (!val->loc) {
-    printf("stack_push_lval: lval has no location\n", val->loc);
+    // TODO: look at this
+    //printf("stack_push_lval: lval has no location\n", val->loc);
     return stack_push(ctx->stack, NULL);
   }
   
   sym_loc* sl = symtable_lookup_sym(ctx->symtable, val->loc);
   if (sl == NULL) {
-    printf("stack_push_lval: Symkey %d resolves to NULL\n", val->loc);
+    //printf("stack_push_lval: Symkey %d resolves to NULL\n", val->loc);
     return stack_push(ctx->stack, NULL);
   }
 
