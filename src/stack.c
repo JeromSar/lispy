@@ -72,13 +72,16 @@ bool stack_push(stack* st, sym_loc* loc) {
 bool stack_push_lval(stack* st, lcontext* ctx, lval* val) {
   if (!val->loc) {
     // TODO: look at this
-    //printf("stack_push_lval: lval has no location\n", val->loc);
+    // Probably have to look at how to fix all the lval_sexpr() returns.
+    //printf("stack_push_lval: lval has no location\n\t");
+    //lval_print(buffer_stdout(), val);
+    //printf("\n");
     return stack_push(ctx->stack, NULL);
   }
   
   sym_loc* sl = symtable_lookup_sym(ctx->symtable, val->loc);
   if (sl == NULL) {
-    //printf("stack_push_lval: Symkey %d resolves to NULL\n", val->loc);
+    printf("stack_push_lval: Symkey %d resolves to NULL\n", val->loc);
     return stack_push(ctx->stack, NULL);
   }
 
@@ -113,18 +116,30 @@ stack_entry* stack_peek(stack* st) {
 }
 
 void stack_print(stack* st, buffer* b) {
+  char* last_sym = NULL;
+  int last_row = -1;
   for (int i = st->len-1; i >= 0; i--) {
     stack_entry* se = st->entries[i];
     if (se->row == 0 && se->col == 0) {
       printf("\tat %s\n",
         se->sym
       );
+      last_row = -1;
     } else {
+      // Don't print entries on the same line
+      if (last_row == se->row && streq(last_sym, se->sym)) {
+        //buffer_printf(b, "\tSkipping %d\n", se->col);
+        continue;
+      }
+
       buffer_printf(b, "\tat %s:%d:%d\n",
         se->sym,
         se->row,
         se->col
       );
+
+      last_sym = se->sym;
+      last_row = se->row;
     }
   }
 }

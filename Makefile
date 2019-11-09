@@ -97,6 +97,11 @@ drmemory: compile
 debug: compile
 	gdb -ex=run --args $(DIST_DIR)/$(TARGET) "test/std/test-stdlib.lp"
 
+# Target - try
+try: compile
+	$(DIST_DIR)/$(TARGET) try.lp
+
+
 # .c source file
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(@D)

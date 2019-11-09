@@ -107,7 +107,6 @@ void lenv_put_native(lenv* e, char* name, lnative func) {
   
   lval* k = lval_sym(name);
   lval* v = lval_fun(func);
-  
   v->loc = key;
   
   lenv_put(e, k, v);

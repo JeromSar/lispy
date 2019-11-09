@@ -1,6 +1,10 @@
 ; map-new
 (assert-equal {}
     (map-new nil))
+;(assert-equal {{1 "Hello"}}
+;    (map-new 1 "Hello"))
+(assert-equal {{1 "Hello"} {2 "World"}}
+    (map-new 1 "Hello" 2 "World"))
 (assert-equal {{1 "Hello"} {2 "World"} {3 "Test!"}}
     (map-new 1 "Hello" 2 "World" 3 "Test!"))
 
@@ -26,9 +30,9 @@
 
 ; map-putall
 (assert-equal {{1 2} {3 4} {5 6}}
-    (map-putall (map-new nil) {1 2} {3 4} {5 6}))
+    (map-putall (map-new nil) 1 2 3 4 5 6))
 (assert-equal {{1 2} {3 4} {5 6}}
-    (map-putall (map-new 1 "Hello" 5 2) {1 2} {3 4} {5 6}))
+    (map-putall (map-new 1 "Hello" 5 2) 1 2 3 4 5 6))
 
 ; map-get
 (assert-equal "Hello"

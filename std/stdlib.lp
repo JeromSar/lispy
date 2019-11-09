@@ -17,7 +17,6 @@
 
 (load "std/map.lp")
 
-; TODO: Fix
-; (load "std/module.lp")
+(load "std/module.lp")
 
 (load "std/assert.lp")

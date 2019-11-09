@@ -4,10 +4,10 @@
 
 ; Make a new map
 (fun {map-new & keyvals} {
-  if (or (== keyvals nil) (== keyvals {nil})) {
+  if (or (== keyvals nil) (== keyvals {{}})) {
     {}
   } {
-    map-putall {} keyvals
+    (unpack map-putall (join {{}} keyvals))
   }
 })
 
@@ -28,10 +28,22 @@
   join (map-del map key) (list (join key (list value)))
 })
 
-; Put all arguments (lists of key-value pairs) in a map, replacing previous values
+; Put all arguments in a map, replacing previous values
 ; TODO Remove previous assignments
-(fun {map-putall map & keyvals} {
-  join (map) (keyvals)
+(fun {map-putall m & keyvals} {
+  if (or (== keyvals nil) (== keyvals {{}})) {
+    m
+  } {
+    if (!= (% (len keyvals) 2) 0) {
+      (print (str (len keyvals)))
+      (error "map-putall: Parameters length not dividable by zero")
+    } {
+      (unpack map-putall
+        (join
+          (join m (list (list (list (fst keyvals) (snd keyvals)))))
+          (tail (tail keyvals))))
+    }
+  }
 })
 
 ; Get a value by key from a map

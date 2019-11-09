@@ -1,10 +1,12 @@
 ; fst
 (assert-equal 1 (fst {1 2 3}))
+(assert-equal 1 (fst {1}))
 (assert-equal "hi" (fst {"hi" (error "fail")}))
 (assert-error {fst {}})
 
 ; snd
 (assert-equal 2 (snd {1 2 3}))
+(assert-equal 2 (snd {1 2}))
 (assert-equal "hi" (snd {(error "fail") "hi"}))
 (assert-error {snd {}})
 

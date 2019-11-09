@@ -28,10 +28,10 @@ lval* helper_var(lenv* e, lval* a, char* func) {
     syms->count,
     a->count-1);
   
-  // TODO: Remove debug
-  printf("def: Printing stack -- ");
-  stack_print(lenv_get_eval(e)->stack, buffer_stdout());
-  
+  //printf("--- def: Printing stack ---\n");
+  //stack_print(lenv_get_eval(e)->stack, buffer_stdout());
+  //printf("---------------------------\n\n");
+
   for (int i = 0; i < syms->count; i++) {
     // def: define globally
     if (streq(func, "def")) {
@@ -100,7 +100,11 @@ lval* native_lambda(lenv* e, lval* a) {
   lval* newbody = lval_pop(a, 0);
   lval_del(a);
   
-  return lval_lambda(newformals, newbody);
+  lval* fun = lval_lambda(newformals, newbody);
+  // TODO: Detail
+  // Just set it to the body for now
+  fun->loc = a->loc;
+  return fun;
 }
 
 lval* native_exit(lenv* e, lval* a) {
@@ -151,7 +155,9 @@ lval* native_load(lenv* e, lval* a) {
 
     // Exit if error
     if (post->type == LVAL_ERR) {
-      lval_print(buffer_stdout(), post);
+      // Don't print the error, we just return it now.
+      // The caller is responsible for printing.
+      //lval_print(buffer_stdout(), post);
 
       // Cleanup
       lval* error = lval_copy(post);

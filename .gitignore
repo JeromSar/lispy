@@ -13,6 +13,9 @@ Thumbs.db
 # Some testing files
 /*.lp
 
+# Debug files
+debug
+
 # Other files
 *.pdf
 .vscode
